@@ -1,0 +1,35 @@
+# Copyright (c) 2015 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+
+- cdh: action=create_mgmt host={{ cms_hosts[0] }}
+
+- cdh: action=set_config entity=service service=cm name={{ item.name }}
+       value={{ item.value }}
+  with_items:
+  - { name: PARCEL_DISTRIBUTE_RATE_LIMIT_KBS_PER_SECOND, value: 409600 }
+
+- cdh: action=set_config entity=service service=cm name={{ item.name }}
+       value={{ item.value }}
+  with_items:
+    - { name: REMOTE_PARCEL_REPO_URLS, value: "{{ parcels | join(',') }}" }
+  register: parcels_deployed
+
+- pause: seconds=20
+  when: parcels_deployed.changed
+
+- cdh: action=deploy_parcel name=CDH version={{ cdh_parcel_version }}
+
+# vi:et:sw=2 ts=2 sts=2 ft=ansible

@@ -1,0 +1,60 @@
+# Copyright (c) 2015 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+
+version: 5.4.3
+parcels:
+  - http://archive.cloudera.com/cdh5/parcels/5.4.3/
+  - http://archive.cloudera.com/cdh4/parcels/latest/
+  - http://archive.cloudera.com/impala/parcels/latest/
+  - http://archive.cloudera.com/search/parcels/latest/
+  - http://archive.cloudera.com/accumulo-c5/parcels/latest/
+  - http://archive.cloudera.com/spark/parcels/latest/
+  - http://archive.cloudera.com/accumulo/parcels/1.4/
+  - http://archive.cloudera.com/sqoop-connectors/parcels/latest/
+  - http://archive.cloudera.com/navigator-keytrustee5/parcels/latest/
+  - http://archive.cloudera.com/kafka/parcels/latest/
+
+cdh_parcel_version: 5.4.3-1.cdh5.4.3.p0.6
+kafka_parcel_version: latest
+
+cluster_hosts: []
+
+cms_hosts: []
+
+zookeeper_server_hosts: []
+
+hdfs_nn_hosts: null
+hdfs_snn_hosts: null
+hdfs_httpfs_hosts: null
+
+hbase_master_hosts: null
+hbase_rs_hosts: []
+
+yarn_nm_hosts: []
+yarn_rm_hosts: null
+
+spark_histroy_server_hosts: null
+
+hive_metastore_hosts: null
+hive_gateway_hosts: []
+
+oozie_server_hosts: null
+
+hue_server_hosts: null
+
+kafka_broker_hosts: []
+
+# vi:et:sw=2 ts=2 sts=2 ft=ansible

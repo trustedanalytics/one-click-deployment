@@ -1,0 +1,940 @@
+---
+name: docker
+director_uuid: {{ bosh_director_uuid }}
+
+releases:
+ - name: docker
+   version: latest
+
+compilation:
+  workers: 1
+  network: default
+  reuse_compilation_vms: true
+  cloud_properties: {}
+
+update:
+  canaries: 0
+  canary_watch_time: 30000-240000
+  update_watch_time:  30000-240000
+  max_in_flight: 32
+  serial: false
+
+networks:
+  - name: default
+    subnets:
+      # network with static ip used for web
+      - range: 10.244.8.0/30
+        gateway: 10.244.8.1
+        static: [10.244.8.2]
+        cloud_properties: {}
+      # networks for dynamic ips (db, workers, compilation vms)
+      - range: 10.244.8.4/30
+        gateway: 10.244.8.5
+        cloud_properties: {}
+      - range: 10.244.8.8/30
+        gateway: 10.244.8.9
+        cloud_properties: {}
+      - range: 10.244.8.12/30
+        gateway: 10.244.8.13
+        cloud_properties: {}
+      - range: 10.244.8.16/30
+        gateway: 10.244.8.17
+        cloud_properties: {}
+      - range: 10.244.8.20/30
+        gateway: 10.244.8.21
+        cloud_properties: {}
+
+resource_pools:
+  - name: default
+    network: default
+    stemcell:
+      name: bosh-warden-boshlite-ubuntu-trusty-go_agent
+      version: latest
+    cloud_properties: {}
+
+jobs:
+  - name: docker
+    templates:
+      - name: docker
+      - name: cf-containers-broker
+    instances: 1
+    resource_pool: default
+    persistent_disk: 65536
+    networks:
+      - name: default
+
+properties:
+  nats:
+    user: nats
+    password: nats
+    port: 4222
+    machines:
+      - 10.244.0.6
+
+  cfcontainersbroker:
+    auth_username: 'containers'
+    auth_password: 'containers'
+    cookie_secret: 'e7247dae-a252-4393-afa3-2219c1c02efd'
+    cc_api_uri: "https://api.{{ cf_domain }}"
+    external_host: "cf-containers-broker.{{ cf_domain }}"
+    component_name: 'cf-containers-broker'
+    max_containers: 40
+
+    services:
+      - id: '2fd814ac-d1f7-4d4a-a4f7-d386cd8fd8e3'
+        name: 'postgresql93'
+        description: 'PostgreSQL 9.3 service for application development and testing'
+        bindable: true
+        tags:
+          - 'postgresql93'
+          - 'postgresql'
+          - 'relational'
+        metadata:
+          displayName: 'PostgreSQL 9.3'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACu1BMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RmW6UOAAAA6HRSTlMAAAECAwQFBgcICQoLDA0ODxAREhMUFRcYGRobHB0eHyAhIiMlJicoKSorLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZISUpLTE1OT1BRU1RVV1hZWltcXV5fYGJjZWZnaGlqa2xtb3BxcnN0dnd4eXt8fX5/gIGCg4aHiIqLjI2Oj5CRkpOUlZeYmZudnqChoqOkpqeoqaqrrK2ur7CxsrO0tba3ubq7vL2+v8DBwsPExcbHyMnKzM3P0NHS09TW2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+vaUpXAAABORJREFUeF7F1/F3zWUAx/FPdxuMQbMFzDTSql0gSFZUVLMREgkhpSgRRSHCsNJQQgkBImjEMgiWNrTFprA1Y7v3/Wd0znPv9/uccXHu8UPvn77nnvO69z7Pc5/nOVf33UP3iGWLTmyXUE8ha/vxoTIo2thTNlkclfFNOUBB9nMemTwte/RLT0v1NvXELfcT7KfHbsVRYwtxy/VKsWO3/OOA8jIAyqoAqmdH3YRT8gA4vGt3vg+oeOmzcmp2Y0OylLjoGrAnvgYeWgkUv5cgSbFjzoMP4MKmBdMnTp2V9cMZv+Gz60httgD5TS3WK0DFpGgFu78AuJbVxSOn2IxV14BfH5A0sQpy67i4xw040lZuw4HtbVSzZov9cKqJpLQqmO/g6NOQ28ha73VYEKFb6n0JdngkjQd/chBPgtIW1kYegS8VqpSrMFySNsG6AI48D2NkGwkn6ipkr8FJSUr2UxVrcB84W1u2E/C8QhdxEjpJ0g4YZfCn8Ilsj8Nh3a6Z8KYkjYMsg3dCL9kWwqTb4kGwWJI6wgGDC6CRbMchQVKrF2NC4HTIlqRE2G2wjxLZGkO+pPng/3mQx7J+eWX7u+rZIPbCZoOhQLbusEpKxrTe2Z+1VwNcqJUaxE/DyhB4GMyUumFibRDPx9TawWNhRhBflu0tGC1FHYSiTOApY+tXAnA6wsGZMMTgcq7INjXwcr2Rr8drHnxhcE/YP2LHVw8qFVZIUh4kGlwMdSyeCEMV7GE4aPAz8LV5SIX1kuL8nJfBhyHR4skw0M48eca0Mw8Wj4NlAbwZulv8IaQ7OMn5ZE8JJElStwDOgb4BvBBetfh9GObgDOfbainMMetrcCcojgzgcbDE4vEw2cGZMEGmFCiPc/EamKYA7ga/WPwCZDl7qAjaK9BWWOLgjn7KmwRx3Uoqo+3hbt8qDY4pmNdHdUoAe/bBXAWxdkN/F3su4YuVaQe8LacsyI00eCRcbOTiybBcbt8589cNyu12a1xEYRulwrarMEYuToKyhi4eAocMWA0LZBuwKMascyn86LFY++AdF9e/BIMlKWbKn81UI4PhSoIs1stQbKfsAyhpbUCUQuKBsliKOgPTXBxXCvlJClka+GY50l43Fc6KdjkDcGVCnRA28QT45jSviT0H4HA9YzMqAR9wIWuIt0XjBi70fr90pw8AX87c0el9Unt5UwxW+0pYEykp7QaUDO71F8Hyag4X/ynczvYx2NwFrIhUhwo41kpacyvuBLCrs55YeRXTisYKYs0DtjxUCMfipUf98O6yo+Vgf/VeAN/RrdtP+AEK0yUXe5YC1VDcUorIgY3u6WyxrXRGtBxs9EcAvt6SpsD19pJGwXHZM4nf91UAXPx2eF3JYtOAksByP1kN0yX1KYOTdpkgT5GtUtrHyWax4rNzIqTkv2FvpBrO8wF7amI3i221pKSzcK55/LRSAOyYW98VS8nngewtVYB/NWy3e/LuuGsJTnu7mEPHYvLvjDMqMHF5RVfpZlxwR5y08dC5y3/kbpjat5Z0E64dGt+2DrBWbmFicye6QXE4uG8NXM3lcHB/2ObaqH/DwzEV2DvwDTgaDlYmFLQMDqECBoWFY4uhaHi0lPhpNaxTWFidrwLXCy8A5DQIE+uR3wi2vJ7CxYoasfUK/lOfd1aI/r9/dP8BGtRqou0DpNkAAAAASUVORK5CYII='
+          longDescription: 'A PostgreSQL 9.3 service for development and testing running inside a Docker container'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: 'http://docs.run.pivotal.io'
+          supportUrl: 'http://support.run.pivotal.io/home'
+        dashboard_client:
+          id: 'p-postgresql93-client'
+          secret: 'p-postgresql93-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: '1a0efffc-eb45-4bf8-8ee3-a3c1a9a53151'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'frodenas/postgresql'
+              tag: 'latest'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              username:
+                key: 'POSTGRES_USERNAME'
+              password:
+                key: 'POSTGRES_PASSWORD'
+              dbname:
+                key: 'POSTGRES_DBNAME'
+              uri:
+                prefix: 'postgres'
+            description: 'Free Trial'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated PostgreSQL 9.3 server'
+                - 'PostgreSQL 9.3 running inside a Docker container'
+
+      - id: '24736f4a-72b8-4298-96f7-b48c4045ddfd'
+        name: 'mysql56'
+        description: 'MySQL 5.6 service for application development and testing'
+        bindable: true
+        tags:
+          - 'mysql56'
+          - 'mysql'
+          - 'relational'
+        metadata:
+          displayName: 'MySQL 5.6'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACZ1BMVEUAAAD///9XX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3RXX3ScHQA3AAAAzHRSTlMAAAECAwQFBgcICQoLDQ8QERITFBUWFxobHB0eHyAhIiMkJSYnKCkqKywtLi8wMTIzNTY3Oz0+P0BBQ0RGR0hJSktNTk9QUVJTVldYWVpbXF5fYGFiZGVnaGlqa2xub3B1d3h5ent/gIOEhYaHiImKjY6PkJGSk5SVlpeYm5ydnqCjpaanqKqsra6vsLGztLW3ur6/wMHCw8TFxsfIycrLzc7P0NHS09TW19jZ29zd3uDh4uPk5ebn6err7O7v8fLz9PX29/j5+vv8/f6bkW+/AAADLklEQVR4XqXT+VdVVRiH8a/nci/ITQpQbpORNJEUmURlhgrNGhaYzQOahmRUlg1imrOVaQmkSalokg2iRqR0IbxacRCfPyrWOmux6Mwcnx/3Xp/1/rDfrUmXkSZp3hEGP87XxBvFNSMA6XojCu7Cqv22CBgofekvwFydO2GchpWa9inAqWWNy5fcO2UCuAlGaqR7jmHFpaOrZhshcc5BOFcqxV8ZZKz9peGwUmfhZL6kosb332zZ3QvAcGMiFFbFELTGx85SdV8CdJaEwqoHPtS45p4AMgtDYb0HVEiSsm+ISVJyLcDbsTA4qxOaJanwFF9borof2JkbAqsBjkpSLTDDAtf/ALQmQ+CbgBsl3WLyx2RZJXcD3yeDsbpglSSVLU2NXWZtAlpzgvGr0BOXLaMF2GoE4sJ/oV4OvQVYGYi1Hrodo5W9F4ZvD8TFF+E5Ocrvg++MIKwNMDDNqWuBukBcNAgb5Gwf9EwOwloBfXI2C3gtEK+BPXJpF5zNDcCxM7DIDZcDywJwJWRy5TG6N+6Pm2G7XLsLeMIffwtL5d43sN8X55gw3QMvBMr98EzIyKPEGVjnh6ugS5LmPSBnjZBO+OBHoF3S867LOB2o9sEL4LB0xQAcN5z6AGzzwXfAUJ5qAeY78YtwobLIE2cNQJ02A7Q7ceEwQGZvw62uWJ/AAR0DoMqpv8CKfYtiLrgCuL8ffoTDMQee+u7nHWmLH7/PidUxCk2Ya8Izcu3qus9MgDUJB54DAMVroa9AHqXeGQLa8uxY2wC4+6o/Ybs8K+kADubZ8ZXd1kMtBp721omPgLaEDaukF3hK2gX/zJJ3zcAHdqzrDmHOlAp+g94ZPnor8KAdK/FYuSTN/htOl7ix5JyX39q4afMlOJFjYWcPj0C60i6zl7SZjLXCC2vxCFx83bajpxnfEU+sh85D0//x4wAMHPpqx56ONKz2xir75fekbcHOATWGBfKL5YOVvFO2HgV+nWr7VaF7A/j5mohY64CesojYaAHO10bDMpoAthREwtKTF4D+F+KRsG7uBOh+NhkFK9GQAfgpEpZS601YHhFL1zafnDKKo3d5+D8a17nGQDswlwAAAABJRU5ErkJggg=='
+          longDescription: 'A MySQL 5.6 service for development and testing running inside a Docker container'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: 'http://docs.run.pivotal.io'
+          supportUrl: 'http://support.run.pivotal.io/home'
+        dashboard_client:
+          id: 'p-mysql56-client'
+          secret: 'p-mysql56-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: 'd42fc3cc-1341-4aa3-866e-01bc5243dc2e'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'frodenas/mysql'
+              tag: 'latest'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              username:
+                key: 'MYSQL_USERNAME'
+              password:
+                key: 'MYSQL_PASSWORD'
+              dbname:
+                key: 'MYSQL_DBNAME'
+              uri:
+                prefix: 'mysql'
+            description: 'Free Trial'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated MySQL 5.6 server'
+                - 'MySQL 5.6 running inside a Docker container'
+
+      - id: '3101b971-1044-4816-a7ac-9ded2e028079'
+        name: 'redis28'
+        description: 'Redis 2.8 service for application development and testing'
+        bindable: true
+        tags:
+          - 'redis28'
+          - 'redis'
+          - 'key-value'
+        metadata:
+          displayName: 'Redis 2.8'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACW1BMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3SOnW04AAAAyHRSTlMAAAECAwQFBgcICQsMDg8QERITFBUWFxgZGxwfISIkJSYoKissLS4vMDIzNDY3ODo7PD5AQURFR0lKS0xOUFFSU1RVVldYWVpbXF1eYGFkZmdoa2xub3BxcnN0dXd4eXp7fH1+gYKDhIWHiYqLjI6PkJGSlJWYmZqcnZ6foKGjpKWoqaytrrCytLW2t7i5u7y+v8DBwsXGx8nLzM3Oz9LT1NXX2Nna29zd3t/g4eLj5OXm5+jp6uvs7vDx8vP09fb3+Pn6+/z9/iQF5AgAAANESURBVHhe7ZZnU1NBFIZjCqFJEUGMhCJWLDRRMYqNpoISG0qxAXalgwoIiIAUESw0KSKKGiliAYL0kOT+LM9JmdmbzQ3J+MmR90MmM5ln4Nnd9+zyVvxF/iF4GeZxxlne1yd35v7dAuyXPclAJrP9bIUFkfVaIN82wqe2PlJgA+ySPACkqmIn/n0lfB1IdrESDiycBvRbhpdewEneC/h0YeDSsDCqBU1fHRUREuFP1cC3RAktwh7pQ0DOFm82FZHc/AX4ULoHJxxUMg/o54tuPDOxP94O+HxJkDlYHNcKpLZRJuBxZXvZAvCtcWIT2DvzO+5pjh/PYjwvDwP+PdObgIMrVYDiaVoyooO4oKrKYD3skNgNpLp6lyWG3sruRAeAFWoGUuTBszqOKRogNIMAM0wpiswVBViHemWNATpcyyh18AFRbAcDqYtYGt34CFe8I1Z03ggDEFqNRehJEFsi+XubcDurQwEgYIg0D9fhx1VOecek93jI86SAsmGMa6oF+TU3xlE11RVAGsZwym8qVelVAWPDCaRXWA0lz9/3AlVrwkiJawZYXRVC4r75hDyq9qNqvi+JhlRp9DCmPZrsr1vaCMoXrzeqjqSRTRNFY8EMcDmWYjCFnDR28Z0o31CGqp3xduSMShkEcqLJuGDiBJw0Uzk+lDyl6pMzBejH007EavN3NwKuoeRpVZxR+wWmW7Xh4QItT6suVmwzu89e18dN5ClV5R0J5yFxlH8g5CnVL2dhXHDAGIHsJSlPqr45BKoUfA80iQRVLKJ8jEFeFIOq6ic7WBbuz5hJhGlNyV2lvgTGsvy+v46F+hfMQIMAzlWgZq6UhTufU+jqp6vp1wsrWWh4LV5/r0/ppmdEnaHiZIRH2hjq5ELEx7rAYgb3H2FIQPEcNg6OIZngKo0WO0Od+tFL7qwbY3XGT5MCYKQgQ/Wt54SYuqvsT75DzQJ/kqab3hBh/qLj73mO8rXhRoCq2fwDaCkLpidrF/5jtOpYlifn/Uwe8NErq0xV+5McLb4MyLkzWxhAqjbL+FY+aPiyZv0QNagulm+16R225TEOoF5UVd6W2PyIW3trgoEosIY2whinM5/aDgu5f/9P3tvL8B9Ei/pF76GQOQAAAABJRU5ErkJggg=='
+          longDescription: 'A Redis 2.8 service for development and testing running inside a Docker container'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: 'http://docs.run.pivotal.io'
+          supportUrl: 'http://support.run.pivotal.io/home'
+        dashboard_client:
+          id: 'p-redis28-client'
+          secret: 'p-redis28-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: '2451fa22-df16-4c10-ba6e-1f682d3dcdc9'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'frodenas/redis'
+              tag: '2.8'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              password:
+                key: 'REDIS_PASSWORD'
+            description: 'Free Trial'
+            metadata:
+              costs:
+              - amount:
+                  usd: 0.0
+                unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated Redis 2.8 server'
+                - 'Redis 2.8 running inside a Docker container'
+
+      - id: '23eefc93-6814-4db8-bbf0-eaa6c3c5fecc'
+        name: 'mongodb26'
+        description: 'MongoDB 2.6 service for application development and testing'
+        bindable: true
+        tags:
+          - 'mongodb26'
+          - 'mongodb'
+          - 'document'
+        metadata:
+          displayName: 'MongoDB 2.6'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAABvFBMVEX///8AAABWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3TvKhT0AAAAk3RSTlMAAAEI9g/99TL+eEIQgN9E+hXrJfSqdpdwJy4JBtvYsV1ZCrX7K4qhPL0YbpigR9AO6AzNSM/FJLKLUWFBGgTJlZ/hzn60u41AuN3XUyLDfdE78zHgI39Fpx2metN0SelPLRfydcY69xmUUucFH4S6tlgC+epcYMzebU3uhUxe2U4eme0W5dZV2nscA/GPkNz4o0PM57t+AAAB8ElEQVR4Xu3WxW7kQBRG4SnbzZCmMDMzZ5iZmZmZmZnhvPCMrChy2yVVlTXLnN1dfLrbf8l/TXhbVum9zHBNNLE8JLY2AlXhsFUNkF0RCs/i1hoGJ4GVg7ClwRzPAWsjZ0rw2RgX98CaS0Ksg1yFIb42CbHOf8BuAidlhjNAiwvqYuDsNsGdHbB6/t2THDytNcC9cDUt5nvVAcfqtfEJYJtYaCmwShdbk7BBeBqARFwTDwF7vdhuhClN3AzrRVkTwIQWPpyATaK8zXBTC9fAVsuHe4DtOngH7BT+dkFSA49FoTaAz8F5DTwE+0Sg/RCNqPEBGBTBsnBQjQ9BvwQfgaNqPA4pCT4O3Wp8EooSfAqm1LgEaQk+DY1qDAhJfXA2NLYBNXZgTKa1cAH6QuNhuCCx9XBRjSuhRYLzUFDjDFyW4Dg0qXEFDEvwFZhR47YcXA/iG9ClxuIWJIO4F25r4FbI3vHbyF0SeQ1s34P7fvwAHmotgyQ8sn14HB5r4ZFReFZun4OT1sLiBUR7vLbtJXQJPWy1w+hrD34Db9OaWLx7Dx/yC7YK+Ki/DOIx+DQt3KwMUG0yaFIOFNwl86UdaP6qjV39Dfg+Mv0jBnQ3GI64up9ACeBXv/l8jPzGbaYYajL/AQbiYfc24KpFvIhD9xcTPb2tejzhLgAAAABJRU5ErkJggg=='
+          longDescription: 'A MongoDB 2.6 service for development and testing running inside a Docker container'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: 'http://docs.run.pivotal.io'
+          supportUrl: 'http://support.run.pivotal.io/home'
+        dashboard_client:
+          id: 'p-mongodb26-client'
+          secret: 'p-mongodb26-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: '6d8024b1-7deb-4dc7-a72a-33ec3f7a1bfc'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'frodenas/mongodb'
+              tag: '2.6'
+              command: '--smallfiles --httpinterface'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              username:
+                key: 'MONGODB_USERNAME'
+              password:
+                key: 'MONGODB_PASSWORD'
+              dbname:
+                key: 'MONGODB_DBNAME'
+              uri:
+                prefix: 'mongodb'
+                port: '27017/tcp'
+            description: 'Free Trial'
+            metadata:
+              costs:
+              - amount:
+                  usd: 0.0
+                unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated 2.6 MongoDB server'
+                - 'MongoDB 2.6 running inside a Docker container'
+
+      - id: 'b76f6d51-f701-48c2-9614-7240fe580346'
+        name: 'couchdb16'
+        description: 'CouchDB 1.6 service for application development and testing'
+        bindable: true
+        tags:
+          - 'couchdb16'
+          - 'couchdb'
+          - 'document'
+        metadata:
+          displayName: 'CouchDB 1.6'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAAA5FBMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3QSvSEbAAAAS3RSTlMAAAEDBgkKCxATFRoeICUpMjQ1Nzg/QUZHSFVcXWBjcHh7foCCiI2Ql5ibnqyvsLG3usHCyMrLzNLa2+Dj5OXs7vDx8vX3+Pv8/f6V8ZhxAAABEElEQVR4Xu3WWU/CQBRA4RE3RHBnXFDrgtZ9bV3ADRBpe/7//3E6TVOMSaeEGNT0PN/v5SY3uWJsiH41znGOhW7tPiBrL3vj2sR43WeQTr/gBwZrvg9PgrdUzNisC5t9uAgtkTkbtkaBc1xY3T2ArlUrZ5Er29YNXOwsazx1TRRe3Uinr4g7KSh8SFLNhI9IshR+hXM77A5uDXaiC8f7YZfwqDA8R2AOmgZchiehKwEhjknFjJOR4nf8ZqVXT8Hmfgx37PTOUrBxYQvD4MpocI7/9GH4tGc0XiRLnZLGG+Ar7MBHM+wdGrahBngtVRtwFJY+cb2qMFTtEedLhYV0Ih64UhiTbhBRR4p/+4flOMefpAXbmjbAmFwAAAAASUVORK5CYII='
+          longDescription: 'A CouchDB 1.6 service for development and testing running inside a Docker container'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: 'http://docs.run.pivotal.io'
+          supportUrl: 'http://support.run.pivotal.io/home'
+        dashboard_client:
+          id: 'p-couchdb16-client'
+          secret: 'p-couchdb16-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: '3a35568d-aea9-447f-9e39-363c2e9da193'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'frodenas/couchdb'
+              tag: '1.6'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              username:
+                key: 'COUCHDB_USERNAME'
+              password:
+                key: 'COUCHDB_PASSWORD'
+              dbname:
+                key: 'COUCHDB_DBNAME'
+              uri:
+                prefix: 'couchdb'
+            description: 'Free Trial'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated CouchDB 1.6 server'
+                - 'CouchDB 1.6 running inside a Docker container'
+
+      - id: '5d7b4893-bd37-495d-8f94-cf45e1fdf74a'
+        name: 'neo4j21'
+        description: 'Neo4j 2.1 service for application development and testing'
+        bindable: true
+        tags:
+          - 'neo4j21'
+          - 'neo4j'
+          - 'nosql'
+        metadata:
+          displayName: 'Neo4j 2.1'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACmlBMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RfNoVbAAAA3XRSTlMAAAECAwQFBgcICQoLDA0ODxASExQVFhcYGhscHR4gIyQlJicoKSosLS4wMTIzNDU2Nzg5Ojs8PT5AQUJDREVGR0hJSkxNTlBRU1RVVldYWVxdXl9gYWJjZGVmaGlqa21ub3Byc3R1dnd4eXp7fICBgoOEhYaJi4yNjo+QkZKTlJaXmJmbnJ2en6ChoqOlpqeoqaqrrK2ur7Cys7S1tre4uru9vr/AwcLDxsfJysvNzs/Q0dLT1NXY2drb3N3e3+Dh4uPk5ebn6Onq6+zt7u/w8fL09fb3+Pn6+/z9/kplkcgAAAQ9SURBVHhepdT5XxR1HMfxT8vtQUIoFUmpQCVBimIqHRq0kSYelKWdWJAaQmkYiUd4RRZZlpmh4hEGkamkdCimadaKKCy7HLv7+l/i4ezMzuzOED14/f58zPeHz3vktmE0gEXJllt7Ce/VuuWjZUjpcVoz/hyLwzOWbdzXePr09wc3F82I+m+c4yRQD7pchwrHDI4fcAFtZfY5rx4lNOfm5EFw2GngPeWBT14HvGfrtlVVbd/b4lJ4/4Y4SzwfeFf8ZfbAQfEXkVV6BgDHU1b4APwaIWoV4B0rgdJrPQAfRpnjLlgpWilAvuibdBDgWJwZjgMek0D9UCSGxm/rBVq2LBoXghOAR3S4F1bo6dyjPvx5vs0KwuF9sDxgJwKLAjSpHkO74w1YmuB4AJcDEzU7qwOgt6Hq7TVbfvAAXJ5swMXAfNVOckKLZuf0AVde9x/ZuNUdQGemHq8DXHkKSD0PPKva+7uBHbGilbAPcCQFcJIbgC8ejx/1cKUbqLP5bWQrUCz6bJXAdzYNV4MXXc3aEkqACjFm+xRYoOKxbvio4AZqNaNUG+OAn8IlqFEXodXmx8XgmyQJay8CdNRmidYCYJaEVAhk+/FJOHwL3DNj+r2G79TCWQkt0gHrFXw3sFhMuwRrxaQaaFLwEvDdYWpHAHYz/ApcV/AmOCWmJQHpZtgOKLgBdpjjZGCyGc7V8AUoMce3AzlmuBC6FeyGAjGvA94ww5XQomDAboHr4YgZboUdGp5rgVeA975QOx14WsEuWGCBE/vgsxBra4Br0Qq+CsvEoq1AfjB+DVglCj4J661w4k1wTjVaex+cj/HjXVAvVhUA3fMM19UH/dPEj0ugPdxSvwPwZapKHzoC8JyoeCowTSwrA/AdX5WbnmEv+xGgf8CqOOwfqBDr8tsx5HleAlh2giM6AMKyV27fU1OeN1LV8VVOdDlH6HGWftAxJX+i1FWVqPIxL3z1hw88v+/uho9Fj+UEtEUpdso5At3U33xUfFyElAKZRvwM6rDsPQB/H9r1zW8AlAYN3An1YsTSCK5UEZnZBxybGSYDpX3iA1424APgSw/GGV5oiZa4v8D7kqjN7oDeNJ0tAqolGEsFsNu2AVgqgTLdhuOb0w8XYkNxZBOw0wVfi75i4EHtIU7onSKhWO68CAApBhx1Bdape3ABS8QMy4RrEPob3QiNt2h4mRcoEXMsqZeB6tBROWSgtCaAYrHCktQJ5UF4NvSIjK/2KMu0xnIC3g/CeXDjiT39AC0pMhjeCweCcAl4AOheEymD4rfAPdqIGwHAvfUukcHxxJBjzgbgl9XavKyxHIauCTobcwo639QOdHCc6YVzyZoduV85i6FhKQfal0YodtbPwD7bkLGtFqDtg4WPzittBmiOlSFjCa9A3/4xMhSslXMKtasv2uT/YbHlVJ/pxdv2+cIYFVjjYTQs/C9zNu63Rctz6gAAAABJRU5ErkJggg=='
+          longDescription: 'A Neo4j 2.1 service for development and testing running inside a Docker container'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: 'http://docs.run.pivotal.io'
+          supportUrl: 'http://support.run.pivotal.io/home'
+        dashboard_client:
+          id: 'p-neo4j21-client'
+          secret: 'p-neo4j21-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: '8f1028b9-68ad-4e6c-bd5a-dbbafd622ffb'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'frodenas/neo4j'
+              tag: '2.1'
+              privileged: true
+              persistent_volumes:
+                - '/data'
+            description: 'Free Trial'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated Neo4j 2.1 server'
+                - 'Neo4j 2.1 running inside a Docker container'
+
+      - id: '3f97963d-2224-488f-b945-1fb2dff61a72'
+        name: 'arangodb22'
+        description: 'ArangoDB 2.2 service for application development and testing'
+        bindable: true
+        tags:
+          - 'arangodb22'
+          - 'arangodb'
+          - 'nosql'
+        metadata:
+          displayName: 'ArangoDB 2.2'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACEFBMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3SntjWpAAAAr3RSTlMAAAECAwQFBwgJCgsMDQ4PEBIVFhcYGRweISIjJCUmJygrLi8wMTM0Njc5Ozw9Pj9AQURGR0hLTE1PUlNUV1haXF9gYmNkZmdoaWtsbW5vcHFyc3R1d3l6e3x9foKGh4mLjI2Oj5CTlpibn6KjpKanqKqrrK2ur7CxsrO0t7m8vsDCw8TIy8zN0NHS09TV1tjZ2tvc3uDh4uPk5+nq6+zt7u/w8fL09fb4+fr7/P3+XDREAQAAA6VJREFUeF6l1/tXVEUAwPGJfYrGS820RSjIF2EQgfnKzAhh0yWEkjSs1jAwLBFNrHTDENtI0lVgQ7dY2NbdRb7/Yp772Jczd7fj96c5c87n7Jm7596ZES88R1lY5GRr+nJiYRUe/TrY5hQ5FcIlh0Nk+svn/B/4pRtoLT74exWA4NaisWcWCJ/a5ngKbLXHgkB0Z5F44zysnHJl1vBeFP6pKQrbf4F4i8iuJgy/u4vBPlhtE7m9GoOBIvD6Jfhc5HcEEq8Uxl/AXdczuGQChgviF2OwTzzbG5BcXwh/CH/ahKRJ+LQQnoKPhKzDMGuzxrUQWyfF7iVotMafwPdC3rfwlTWehP0K/A7MlVjhaoitUWB3DF6zwj1wUagahz4rHID3lbgTAha4IgUblfhlSJWp8btwW6ibhn1qPAwDFvgMDKnxPLyZBmsPDQVuB4YOrU3jZnigxDWw7DSo6+QieosnXeZcHDwq7IXLht0cJFNws6F/hg4V/gF8uvU8BO72N9U3f3YfeOjRcS+MKrBjCeo1W3kfHh+za8BxIgn3KzX8OkRscrwNFm0aGIF4szB76zGMaNj2COrl+Dj8qIGdwMHcV5mdmh6DLjm+CCc0cBnGRXY/mU/yY/hOjudgh7bilD7I1AApbdU7YFaKq2BF+7AfhN9Ebn8Y63AmoEqGW2FaA37w5+GvzalJaJXhPhgxl3wkD39gLvob6JPhYfN5BaAtD7dBQMPHYViGJ+BtE+/Jw3tM3AoTMjwPtRq4BO15uB0uaXgrhGU4BmXmazuYhwfhjIYr4V8ZBnSwH2by8Iz5RbYBCuzSQHkCdufY3ZAo17BLgaOwQQcX4HoOvg4X9NEGiMpwEBp1ULea+8jaYbVOx40QlOFR8BrgHCT3pu3eJJwzxl4YleFuuGKAddPw5LS+76w5/QSmzZ3zCnTLcB3Eywy9KQQs+A80HfAvAKFNhi2LQ50MixnoEEYbb5LpZnoX6YAZIcV9EHKY2t4ZRi/caTetIwR9clwRBZ9I52gZGLsxNtDiEOl8EK2QY9EPy1uEui3L0C8U2H0PpkqVtnQK7rlVWOxKwbhdYe3jkNollFh0A9fkv116DegWFlicBaaqJbZ6CjgrLHGJH4j1OvOoszcG+EvUWM+bBOa85Vm0wjsHJL1FnLe33wFIXPU1VD2FVQ2+qwmAO9tFEVg4eyIYxTGK9DiLvd2Udk2S3WRXqQGtsZnn6PlbkRVWIrfOH/UoL2XP0X/IXL8zaEdvhgAAAABJRU5ErkJggg=='
+          longDescription: 'A ArangoDB 2.2 service for development and testing running inside a Docker container'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: 'http://docs.run.pivotal.io'
+          supportUrl: 'http://support.run.pivotal.io/home'
+        dashboard_client:
+          id: 'p-arangodb22-client'
+          secret: 'p-arangodb22-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: '01a3df74-0718-48ca-8b30-a9f79e8bec94'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'frodenas/arangodb'
+              tag: '2.2'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              username:
+                key: 'ARANGODB_USERNAME'
+              password:
+                key: 'ARANGODB_PASSWORD'
+              dbname:
+                key: 'ARANGODB_DBNAME'
+              uri:
+                prefix: 'arangodb'
+            description: 'Free Trial'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated ArangoDB 2.2 server'
+                - 'ArangoDB 2.2 running inside a Docker container'
+
+      - id: '3ce3d09a-90f0-437b-82f7-6a33194025c7'
+        name: 'rabbitmq33'
+        description: 'RabbitMQ 3.3 service for application development and testing'
+        bindable: true
+        tags:
+          - 'rabbitmq33'
+          - 'rabbitmq'
+          - 'amqp'
+        metadata:
+          displayName: 'RabbitMQ 3.3'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAAAUVBMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RuH96cAAAAGnRSTlMAAAUPEBkwN0tQY3CQoK+wwMnK0N3g7O7w9KTmSYcAAACLSURBVHhe7dfXCoQwEEbhWNcYNZY1lvd/UM2wZECxrQXUOZc/fHchIcza0atxi/msT+BQsGEHYyV1X8QZDOtwCnuEmAO4MSZMmPAvxONOwaE0fQDLYWoaL5fOYcIeNwWbMW9N9eU4EbrqPyzAlJdgwnmsawDf5YTZrsl5wmVAWMmplp+b9e3EL/4adTF8SfJrqMLuAAAAAElFTkSuQmCC'
+          longDescription: 'A RabbitMQ 3.3 service for development and testing running inside a Docker container'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: 'http://docs.run.pivotal.io'
+          supportUrl: 'http://support.run.pivotal.io/home'
+        dashboard_client:
+          id: 'p-rabbitmq33-client'
+          secret: 'p-rabbitmq33-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: '6d3d7e5a-c7ce-4f80-99ca-7cc52445d355'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'frodenas/rabbitmq'
+              tag: 'latest'
+            credentials:
+              username:
+                key: 'RABBITMQ_USERNAME'
+              password:
+                key: 'RABBITMQ_PASSWORD'
+              uri:
+                prefix: 'amqp'
+                port: '5672/tcp'
+            description: 'Free Trial'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated RabbitMQ 3.3 server'
+                - 'RabbitMQ 3.3 running inside a Docker container'
+
+      - id: '7affa902-d8fb-46db-b13d-f688cebda211'
+        name: 'memcached14'
+        description: 'Memcached 1.4 service for application development and testing'
+        bindable: true
+        tags:
+          - 'memcached14'
+          - 'memcached1'
+          - 'caching '
+        metadata:
+          displayName: 'Memcached 1.4'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACu1BMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RmW6UOAAAA6HRSTlMAAHCw8NBSbAYFyf0CAwHx/vyAlUcQFQo94Oj2wpDrYKcNn3UOarghwPcpeYb7Ykq+Tc4g0/nFEof0BMYvqq8U+gm07oRvCHH4MN5hIyLdFtnv1HLWPHZDplSbsTrVD47naxpoJK6cx1+e2Ca/ono1lrtYyFDqrFvsOX8HvW7p1yey0V63QWSPg7ypH+0xO6uYY6iXs8QojM2TtpmFmgw+8qAckcpLijTBLRNJVUV+MlehiW2dzONP5rklGZQepVMqXeVIGC66tTd9kjPf4o2CeNs2Qh13aeR02hFAZ3vDWYiLc9wX4aMsaM9UuQAABNNJREFUeF7l1udXFUcYBvAJiN7LBekSQTEC0kREEBE0KkVAxCAqalSKUexGTew10Wg0tlhijLG39N5777333p4/I8/s7Mzu3T05OSf5kA95vsA59/x2d+Z9590Vl/yL/JdYCHFlYzdX1mamCn/aq+Phzi3tQuE0hGdFwGd7DYUn4xXOhTejYv/WYrjC3eVTROq8DmZpT7+Nmxph0ht4XuFE4gnC5EMwt7pt9mO0GXuFk5lAscL7gQr3ne4H08OxgRW0cSOFK8uBRQq3AdcKd24jDg0xeB5t+j7hzkDgtIWDg4AZYTj2cur0O2w7lXbMKyIs/QCkSvwagMkiLIE8gs5nLHBfiLifCM89NIslfpB4sOfHu6+giN5AsHuPVRZPltG0SvwWca7wpCCOZqEQwWja6hgvfo5miMQPAem+X0VyiKpIDKf9KEV4U0W8QOJhQJSpqKPryfIj4oGGccKfCmCyxKuA1QqknseSk0bLLXdXvH7XAAc/DtQSVzn99ASALtMuJ6dY9nobTANwqcGTgCTiI87FHwazXujclU+751UFekYT1xo8AriMONmp1FOQSTZ6DvG9QmUlmDsNvgHIId5B8KLCL1s4rdno9dERto2x1pAe1PgmIJr4agI1Osqh8obwZwGsvKnxCSCKOAlYK6y0Er7dSL3NZwPvhu+86Av0JmZFpii8hm7NugQgY7QXFxEW85cTGhcCncRLgI0KywU8II4DyPTYmEXEs9jvwzROBLoRR3HTFb6ZbLSo+wqI3+umalDliWogw4XLiHm9Q2b7K+xu2BiOzxNvFzcC6G/jLADEGcCPCg8FJtoDCslu+wmsWTOb4IiNIxRuAAYq/CQwQoLFg4A+bpxD1Z3vBtOgBgOwOyFfN3ImgFbHPk3UyEM7y7qGygEPriQ5Y4G5CcBhY621jiUY55pHjyhsSp9C/KgC04H43dqmtgBxcqMmEBT5HnuTwX0VWAfguLtBOiQoNffxr7ncwaIESIt1/sd1Eox0PXaiwiGNs4mftYCqyjRl34He+1MELzj4NHE34DslYHpN9GK15pkjgJd0n5lS7QRaFL6oRJqrvMeAmkopgquAljrTVbnhp6o3cLsC0cBmM0T0XS5QJCkwA0gICHMOthBvNQ87naDcxmdpdqqRYZ41T7avnYNqGPQBjplXH065xmNJaWlpQQPwXowCNUCkq2OLiQ+bUzqYOEvjJJi8T2D3yAcazwf2Ey8FJikwGq5LX+PgjyVQ52Klxlu4U8Q/Ods0EcjQMz+lRtutNrhI/KnGnUAh8WcAgmY7YV5Mc3tEWPm82ZnzXwidMuBL4vEUV+lpY862P3VjgIPafk003n5jLFMg25kC/nwDYLbGBfb7Wf69IEwlQ81/gWuJR2q8nWgWcX/ib13fLgN8zPRfXIy7FrnEIg4otEET8ff2+jt2BKWJ3dbxg6xASggYJXQmEwckbgOmCztHgXhr9wp1zc8AWC4vFvZQ54A0IXEOMF/jn+1xFZsPZi7PJpgQh9Ah4iaDRwFHLZwEjImy8wtJCXFlGdT8+BVMfLsQvwHpYR+uMy1cD0+a7C/IXYJZTfy7EH/Am3MW3uexCXLRsQcWZlVJHNiUOSDIQ+PDYy0s5nRFutI1hMSXDcUe23ZW4n+e/yX+E6scoZTF1zKNAAAAAElFTkSuQmCC'
+          longDescription: 'A Memcached 1.4 service for development and testing running inside a Docker container'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: 'http://docs.run.pivotal.io'
+          supportUrl: 'http://support.run.pivotal.io/home'
+        dashboard_client:
+          id: 'p-memcached14-client'
+          secret: 'p-memcached14-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: 'febbe2ce-1461-419f-a237-3b35cb43fe09'
+            name: '128Mb'
+            max_containers: 8
+            container:
+              backend: 'docker'
+              image: 'frodenas/memcached'
+              tag: '1.4'
+              memory: '128m'
+            credentials:
+              username:
+                key: 'MEMCACHED_USERNAME'
+              password:
+                key: 'MEMCACHED_PASSWORD'
+            description: '128 Mb Memory - Free Trial'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - '128 Mb Memory'
+                - 'Dedicated Memcached 1.4 server'
+                - 'Memcached 1.4 running inside a Docker container'
+          - id: '0d1bb839-ba7b-4163-af09-b5f4f610cf1e'
+            name: '512Mb'
+            max_containers: 2
+            container:
+              backend: 'docker'
+              image: 'frodenas/memcached'
+              tag: '1.4'
+              memory: '512m'
+            credentials:
+              username:
+                key: 'MEMCACHED_USERNAME'
+              password:
+                key: 'MEMCACHED_PASSWORD'
+            description: '512 Mb Memory - Free Trial'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - '512 Mb Memory'
+                - 'Dedicated Memcached 1.4 server'
+                - 'Memcached 1.4 running inside a Docker container'
+          - id: '49ca90b5-90f1-4f32-9161-44585cee63d2'
+            name: '1Gb'
+            max_containers: 1
+            container:
+              backend: 'docker'
+              image: 'frodenas/memcached'
+              tag: '1.4'
+              memory: '1g'
+            credentials:
+              username:
+                key: 'MEMCACHED_USERNAME'
+              password:
+                key: 'MEMCACHED_PASSWORD'
+            description: '1 Gb Memory - Free Trial'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - '1 Gb Memory'
+                - 'Dedicated Memcached 1.4 server'
+                - 'Memcached 1.4 running inside a Docker container'
+
+      - id: 'aa0bf747-1a11-4d11-aaca-b3878a17b9ea'
+        name: 'elasticsearch13'
+        description: 'Elasticsearch 1.3 service for application development and testing'
+        bindable: true
+        tags:
+          - 'elasticsearch13'
+          - 'elasticsearch'
+          - 'search'
+        metadata:
+          displayName: 'Elasticsearch 1.3'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACu1BMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RmW6UOAAAA6HRSTlMAAAECAwQFBgcICQoLDA0ODxARExQVFhcYGRobHB4fICEjJCUnKCorLS4vMDEyMzY3ODk6Ozw9Pj9AQUJERUZHSElKS0xNTk9QUVJTVFVYWltcXV5fYGFiY2RmZ2hpa2xtbm9wcXJzdHV2d3l6e3x9f4CBgoOEhYaHiImKi4yNjo+QkZKUlpeYmpucnZ6foKGio6SlpqeoqaqrrK2ur7CytLW2t7i5uru9vsDBwsPExcbHyMnKy8zNzs/Q0dLT1NXW19jZ2tvc3d7f4OHi4+Tl5ufo6err7O3u7/Dx8/T19vf4+fr7/P3+ki7nHgAABHRJREFUeF6l1flXVHUYgPHXGZghEDfMcMtCs1zKfctCLcstBZcsUUtSwzZFzaU0JS2nbCMtNReUJVs0Q8MFF9SUUsASaWQVkGXm+TO6Xodh7ny/eTin58d75nPm3PfMvK+0+h9JK7lHYc9sPuL2UHflQFIvUbonjlrjprmjE20tx7ZXywEovXTmLy8Ah3q1FLdLB7xp8V3FKHxUihu4FdcyfP8ZYG9P8ReeVAUk3QNHzs+87qn5/atxkaegeppYeigHmPOfeG4ZviqhcqAEFZEO9QP02LENgFovAA3DRBSdDZfCtPhz4FRcRwkdsKUeVoqmbuXwhg7HAUttYrYZ5ouuBVByn4qdRbCsCbwNyar0fWqaiifAWXsTSICPRdty2KdiF7wsTT0Pu/S4H5TZFPwr9PDjQXBYj22V8KCCz4LDj2Pgoug7ASMUfAK6+HFruCn6foCJCt4FM8VfLYTq8SEYH4Sd864DOa9E+UABdNbj8zDYinufxoy6vRPMN8+BPlrrqIMHLPjJSuDCrhoA3JseF0mHWC0eBo0THQG4v6GuTRZpM/tnzPKW7Ic4rS0FKJ5tb8KRVyCnk5j1WJaPr0Ua+0ItZmS09+HV8GdH8TfEVQ7AWtUu9sLVUYv+AM5FmbhtNYyyLtypBxpgRzAN2QycjBZxrPDAj7Y7OAEOSnAj4XyQjdgLpLc2H0wH5t7B38E0dXdCg9O6EbMBV4jcbT2UOA1cBNGiVAzHHg2wPfOBt5p36Q2YbuDb1Ko2xsDUJTv8U3RDfbw0txK2GxgqFDurCrM8366cVAMVlqkOgQIDV4HTStvvADzrjwKelAgDJHqgsLd1BHDbwGdgkMUOLwSujRB74i3g6lP2jUBuF7EUDhjYBesCaOgqD7C7gxh1zwDIA7LaiLUeUGbgWCjt4LcPHwOqE/z72A3AVuXPHQ9HDGzPB1eTnVkF5D4i/qJSgVWilAGrDSxTgHkmbfcNwMYwCSwFJil2MHhj7mDZDSwNERlaAJSMFWtjYYNygC/DTjFxZC6Q8+wKD5DZSfmlevgtyHY5DhVd72Jp9wtm1C20iVIujVmp65bMGNOvszk3x5wS8MSKD0tocj3AxX6iaRPNuS/8tM8N1E4OXL3d98CxCNE1F6W8J6x7+11YI9rGwZ74xWs/Scu+XAZA8UtOseKtkKjHj0Gq+HJ0ngonlYvxBbymxx0sVy8c/lHwBlgu+qoosuAyBSfCTtF3kcZQP+4D5xQ8Eoptevx94Ol+B75UcFgNDNXjzwJ2c9ub8JyC5VvYoccr4EWfDdkP5+0qHgmNfbU4AbY7TdDtIHhHi4olG447NDbkEFC4dvLTs76uBZJEh/t7YIsGuwioYYFosSwHPrAFf+9G4KNCzMjqK3osIWnAnvYWG50JvCf24cnb0j5NjDGRFktEFlCS4Gx+sLAc+NAmSioW5xaA4pQxHQ0ZPd5VCjS8rjIVm035G7PqijrMcgdKi7FEvnmN5k7PsEtLsZl99PuHb3i5XZSxLGC2evw/+hchTvJ/RuL+GwAAAABJRU5ErkJggg=='
+          longDescription: 'A Elasticsearch 1.3 service for development and testing running inside a Docker container'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: 'http://docs.run.pivotal.io'
+          supportUrl: 'http://support.run.pivotal.io/home'
+        dashboard_client:
+          id: 'p-elasticsearch13-client'
+          secret: 'p-elasticsearch13-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: 'cff75095-36b7-4e91-91e4-4d27b7bd8867'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'frodenas/elasticsearch'
+              tag: '1.3'
+              persistent_volumes:
+                - '/data'
+            description: 'Free Trial'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated Elasticsearch 1.3 server'
+                - 'Elasticsearch 1.3 running inside a Docker container'
+
+      - id: 'e72113ed-fde7-45fd-8758-aff41e6c5507'
+        name: 'logstash14'
+        description: 'Logstash 1.4 service for application development and testing'
+        bindable: true
+        tags:
+          - 'logstash14'
+          - 'logstash'
+          - 'syslog'
+        metadata:
+          displayName: 'Logstash 1.4'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACglBMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RLjZwIAAAA1XRSTlMAAAL+9Pz2AdX6/eWw+QyAuOfqCxQqUAUH5vLAMnPr3Y7HBItjoYjaNsVaRFTZHMo/97npLystSIRLR76atpDfmI8VE2I1bqDR7qOfOtJvz+2bw7Hj1POrEHW9h2ZSYMlVjeHcIXkxEha8g/hApNeWaRfIu9DG8IYP7Fx/SkNsqn2JcsJC2GgRr7LxpnGiXw2RA8xGOGEoBhiVJgkihR3kCKhBdhlO7x6XbUX1LD1dTbQ8NCCurNtZOWc7t7UnZE9YrX6ly6dwd4Kewd4jePu6nGuSzdargJoBAAADb0lEQVR4XqXW5XNbRxTG4VNJlmTJduxYMoLMzHFiCjStIcxMbdImaZgbZiwzMzMzMzO8/0/frqS4rfesPvT3RTOaee7M2XN35sol/6OLWJLlbr1xR/a08BIw+MdNmzS1OhqQf6Xg3KH+TIzu4IzmB1Lighi0iiaWpMBVMPnPdg5PLh/DymeuqEtL+uyXnHg6pe+uuz0i8kbd1PzEKO3rK7ww9XfpuB0Mm4VNCAPBxgJJ9GRpi9GhZ5dpuBOmqsrkAC9MWrlq9StNeX0igb5iw8O9duzpQLy9syQwJoSRZguTM3MNL8+34Sa6efMNWHGHZ7B4BI8Tk+fc9WA32PBSqhpZnm5AYXl91/7bE0v3Vopp/BVgIRsuo6kX6TqNeMHNR++9vz0vL693g0dkY0n1hfjWNllwhGCLR1j3AiQr7L+pducuKdntQ7Lpz1jwcwT7JN6EWwsxUuy2bIy0Rix4D3GpJPPcuXYdkm0IGpbOHywI2PBY4qvln7U2H57RwL9RymGH33n3/CPEg2LB+V7AL6N7lDAn/tybaa8TCzZbniuWFoPhKiIuCrOseDLxfTa8zeCVPEXa3WLFFcRHbHi5weNFaolX2THnwi02/DxYG00LsOWAHadbz4tdBvaySBTAQrHiZQB+EGthYOw9IseId9rxauI9dpwB9JC8RfygHT9EvNaOow37HiYpBGJix8eJD4meGf0xBVeYdTh6nPgJBU8hLnBYc15PKfhpIE1cnSSOKjgdKHLiGuLLFewFcpw4g1gUbC6Oq2LA58DbU+FrHXivE2e48fZU2C/6ga1z4qUAKvVVlTnxpcQRBfsAnxPvJ35RwWVAyIlPEfcpOGheIEdXEg8o+FXi11z4deITCj5JvN6FI8Q1Cm4mflNcFQFtCs4iftuJG4AiBYsf6HDi+QBaFVwH4BoXnkPcq+DjxO+58PvEhxXMPeIDF84NAR8qON+b6u1enPim0r4MslJdjY8UnEE8x4UbiT9W8CfEFS7cSrxNwYE0IDPg0lOAgx47ltkAwju6C+wy69PPMgGUKLgUJt+mniOR/8Cjn3d2wFSv4MovcLF5X35Ve+Lr6jVD33z73feLvEi0pEeZmf34U5sXaj//MpAlOma7Dv3aYpOxmY0b6ZzYdGDrb78v/GORDywz58/siae6zZVRsZ7eX913Y3GCOkRyAAAAAElFTkSuQmCC'
+          longDescription: 'A Logstash 1.4 service for development and testing running inside a Docker container'
+          providerDisplayName: 'Pivotal Software'
+          documentationUrl: 'http://docs.run.pivotal.io'
+          supportUrl: 'http://support.run.pivotal.io/home'
+        requires:
+          - 'syslog_drain'
+        dashboard_client:
+          id: 'p-logstash14-client'
+          secret: 'p-logstash14-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: '5218782d-7fab-4534-92b8-434204d88c7b'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'frodenas/logstash'
+              tag: '1.4'
+            syslog_drain_port: '514/tcp'
+            description: 'Free Trial'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated Logstash 1.4 server'
+                - 'Logstash 1.4 running inside a Docker container'
+      - id: 'b9310aba-2fa4-11e4-b626-a6c5e4d22fb7'
+        name: 'nats'
+        description: 'NATS is a lightweight cloud messaging system'
+        bindable: true
+        tags:
+          - 'nats'
+          - 'mbus'
+          - 'pubsub'
+        metadata:
+          displayName: 'NATS'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAABEVBMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3StYhm+AAAAWnRSTlMAAAEGBwgJCw4PEhMUFRYXGiEjJCcoKSovODw/QEFCRVFUWFleYGRlcHR1e32DhYeIjZCRlJWgpKiqrLC3uMDDxcbHysvN09rb3N7f4OLo7O7v8PHz9/n6+/0nRLm/AAABMUlEQVR4Xu3XR1fCYBBG4TEgNuxijb1FEbtRsSGKvUHU6P3/P0SPcE5cfJo4WeCCu5vFs3iXI00x+g+Yn3sakO/9DXOd1mMoNIdixzaWB/asMGyLsVQBWFVi6bwB5pVYMmXwJ5RYxnyoDCqxzAG3XUosOaCYUmJrF9i3dFgSJ8C6EkvHJbCoxNL/CG+TYTixnEub9OgreEMheAnOkyY9C9x1/443gR0JcuGgqrPAaThmxoTFhUoE/JwxYTsa5qJFj8HV4mIJWFDi4z4PXoaVWKaBq1Yllm0gr8XJEuAosfR54I8o8dfs+3Ydrs4+tFS4NjurwrXZ7+MqXJv9cKTEsgWgxYmzGFh6yzGwTOlwcEbHQcHsDS2WnrWVNgUOio8buIEdOzTHjIlWPbFXx9eo/vgDkpAUZvH6nAEAAAAASUVORK5CYII='
+          longDescription: 'NATS is a lightweight cloud messaging system'
+          providerDisplayName: 'NATS'
+          documentationUrl: 'http://nats.io/'
+          supportUrl: 'http://nats.io/community/'
+        requires: []
+        dashboard_client:
+          id: 'nats-dashboard'
+          secret: 'nats-dashboard-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: 'b9310e34-2fa4-11e4-b626-a6c5e4d22fb7'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'drnic/gnatsd'
+              tag: '0.5.4'
+            credentials:
+              username:
+                key: 'NATS_USERNAME'
+              password:
+                key: 'NATS_PASSWORD'
+              uri:
+                prefix: 'nats'
+                port: '4222/tcp'
+            description: 'Free Trial'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated NATS server'
+                - 'NATS running inside a Docker container'
+      - id: '211411a0-2da1-11e4-852f-a6c5e4d22fb7'
+        name: 'etcd'
+        description: 'Etcd key-value storage'
+        bindable: true
+        tags:
+          - 'etcd'
+          - 'keyvalue'
+          - 'etcd-0.4.6'
+        metadata:
+          displayName: 'Etcd 0.4.6'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACu1BMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RmW6UOAAAA6HRSTlMAAAECAwQFBgcICQoMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCkrLS4vMDEzNDU2Nzg5Ojs8PT4/QEFCQ0RFR0lKS0xNTk9QUVJTVFVWV1laXF1eX2BhYmNkZWZnaGlqbG1vcHFzdHV2d3h5ent8fn+AgYOEhYaHiIqLjI6PkJGSk5SWmJmbnJ2en6ChoqOkpaanqaqrrK2ur7CxsrO0tba3uLm6u7y9vr/AwcLDxMbIycrLzM3O0NHS09TV19jZ2tvc3d7f4OHi4+Tl5ufo6err7e7v8PHy8/T19vf4+fr7/P3+oFbWfQAABOpJREFUeF7NlelXVGUcgF8ZVkEYxSUVDRe2sMLItTSkXEgrl9zKqIhU0hQzc8nSsIwQJcsENdTAbEFQI9FQSzMVwQRFBZJFtjvPnxH3vvfeMzPOgB2/9Hx6zuE8c+77exdEtwdAuGJEaawmHm+/LCR7PvAS94VHSgsXAzqk90HIUkUkQvGw+2lDCgC2CTGxEuDC40KENwD1C7puZ9egMXu9Am1AyxKfEjSye3aeBu4E2lZ+hcblJ+MqgTL4Z/QPwN8TOmvHlQMXYkRgGcCuQCGCvwVgrvBY3Ay2jd7uUu8PFSDdv0PHtNMwX2i81gC7VYk+C5RGuG4jfwNuTpXJmlPDhU74yQqrJn6fAI1vutqgpCYgr69eePnYfZH5O/FVwIE+zm2/fKApyUN0TnAucP1Zx3baLaA0svPSHAFpfnat51ngY6dJBqfk/1r846qBTnXYaWCew2lugbWOB+2LJjRad4U7xAGXIN9xeSmgjBcm/mvU9K+ioho132y1i3dAdV/hgKUAKszjN74MuLTAInyTjgHcmGa2s4DnhBMLgBypvmk2qE7UL+GjeQBZPWQwqBZ2OqU+H9mgPdVD+/sJsG0JEiYTLwLnozSf2w6tyy32bXgpcGW05k/dhD+lGvinAfXTNR9bDhQMdNq7HDmVma2Q4SecmFIDijyY1hzg9gxj9nuBxkR9Hgqtr4t7GVIKJElPbATSvWV8F85EyWBMK60JwhUBh0GZLj3qDFRZpB+AFdK6V6A8L1zjsw9q+0hfAelCMg9KpC2iaqVwh29+JaullkCcHge1wWDNvmaDlz7fysqtAeoebqi4vr2XXn9JoSaDocZT6ByGFFV6tKEvOBcgv0MyAYr19b0FofpZzhQGi+C4Ko9BhtYORSNc9FQAGCPjQpisynGYIkvrC59fAdsAGWfLoaMxXkRI0Yd4EtRXaoANzn+aECTEUQWN5I4mAn6S+1IP0BAkPG8AtIXIuBJGdUgyGu1FohCgNjf5YfWFg+v6BiigLOyQqS3AEtn2AtTLGLr4+yaAIyIVLsQaoyuHvtKiUlMf0WTY8vdihCTO/G3hF18KqeIJuOMldHJgjnDLOsgTBudgpPCsgbFGsBSy3Me/wDuG94caixD74H0jiIAbnu7aXu0QY8TzYE+HJMlNlpRBnLs4EarMhy8L1Ms3HNoCjGAjZLqLC+AzYXANhugjnmoE0VDn77odpMA4u/Vd1iQD0oRBCSS7jjfBefOrk407OQv+EHaDKPdy1VrvwGJhkAsvatLbBv3NK38VlrmKt0KN+aJ61qH0lFpq/7/nFWiIvrcdq8hNlsRCia4f2R8NyylID3Ruw47CGR8zXgXrdY2Ha6r0GakGkXVwNXvuQ8IkeGZ2E9wKU32y9uQcgQl63L0Z1mYcu42tn1YfAqD2xMHdmdu/2V98C4DvhqpVCFTnrZ7STKP5GT+j86pQ8dis4ETrerlLSegcEgbvonNASCI3nmrDpKFwVaiQHEJnqRnH0H5u17Jp7dztLgy8w56ePmfhwpcSRoUIk4BmGuev23u2mWgztsRqUREkiE6ZAfu1INRDOLEMtnUe74A3hGuioNrSWWu5CYOFGy7DJKtGD8fIKpkkb4FrtmBw2iEOxWST2zi+6/gZt7FvfVfxHR/RBRNcxHWGdx3zu9WeEf8pdub/F3d7AP4FalF575LbpoUAAAAASUVORK5CYII='
+          longDescription: 'A highly-available key value store for shared configuration and service discovery'
+          providerDisplayName: 'CoreOS'
+          documentationUrl: 'https://github.com/coreos/etcd'
+          supportUrl: 'https://github.com/coreos/etcd'
+        requires: []
+        dashboard_client:
+          id: 'etcd-dashboard'
+          secret: 'etcd-dashboard-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: '5d52a2bc-2da1-11e4-852f-a6c5e4d22fb7'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'drnic/etcd'
+              tag: '0.4.6'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              uri:
+                prefix: 'etcd'
+                port: '4001/tcp'
+            description: 'Free Trial'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated Etcd 0.4.6 server'
+                - 'Etcd 0.4.6 running inside a Docker container'
+      - id: '2cb838d0-2df9-11e4-a506-a6c5e4d22fb7'
+        name: 'consul'
+        description: 'Consul key-value storage'
+        bindable: true
+        tags:
+          - 'consul'
+          - 'keyvalue'
+          - 'consul-0.3.1'
+        metadata:
+          displayName: 'Consul 0.3.1'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACWFBMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3QkKWyXAAAAx3RSTlMAAAECAwQFBgcICQsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCkqLC0wMTM0NTc4OTs8PkBBQ0VGR0lKTE1OUFJTVVZXWFlaW1xdXl9gYWJjZGVmZ2lqbm9wcXJzdHV2d3l7fH5/gIGDhIaHi4yNjo+SlJeYmZqbnZ6go6Wmp6iqq6ytrq+wsbO0tba3uLu8vcDBwsPExcbHycrLzM3P0tPU1tfY29ze4OLk5ebn6Orr7e7v8PHy8/T19vf4+fr7/P3+PmU15QAAA0tJREFUeF6l1/9TVFUYgPFXWfYCQpRakJpIrqQAaWVKWShWlomCqVGpVWYqJSmlmqZUWGYRJG1UKqSgZElLX1kR2GVZdn3+rc7Mjnva2XPxcn1+O3PnM3Pn3DPnzivT7iCZJqasFbubu/64ATeDv3R8WPOgmDLiGTXtYVK7dmipI1x8dDRpxoe0v1xn3Q7PbY4B0Hfkpcfv84pIbmn1vm/DAARqp0+GM98cAejZWSgpZa8+FQHoLrPH87sAWh8TQ7PfGwQitXa4Kgh0PyI23f1BlFC5Dd4Sh7FXM8S+skubxYzfBq6Wy6R5xIy3Ap35MoU0ro5DqyWucPF18FviCnt/hst5jpU3Be+GkUVO6b1d+HM1LgrBJnHa+8AOjVvAL447AOxMYl+cWIlzXNBDZ14Sn4RmmUrZesPuChP3yZTSeAt0iFvshxfd4uwIkRznoiArIe/JE4WfhO+NwHeobzDQui7l6sk4w1ClqPYx8YrCe2Gvyb4VBYAfC0RXCXQqmw8MK/wJrDHYXdzqSp7Gy4A2hXMi8KfCl2Bhui2JkaxJdPuDFxeLqmag/ymF/wJPOj6CbjRHJGvPp2sNuz3CkKR3FR1PiDRCvDwdw4ABX0dHjUgbUGvCAQMOoGO1SB0MFqbjkPG1z6C7OUeB5VvnSDr+Gwx3dTW6s6LbdvGL+0VVee67hxXuhQWSXrve7FJtS4FTynqH4DeFW+BpA87/gUTD/3+6Cjiv8CxgTOF3YZcY8r4eACItKScoq5uJdaI6CY0KV8FZMbdo5bIZkpr30XmJRcUSUTg3yqjl+jL4CZ5xjV+Dr1zjWeNE54vzMt44/XISy2dwWJy3DVibxOUw9oBzfBhoSGL5Gr50jldMECrTuGQc1jjXD21cIBrLfvh3nkwpjbOvwDnLJZbFo/C5xyWW54FjHpdYdgCns1xiaQAu3OakTd9gmbFsj0Pw2clsYTvHbbA8Nwx8U2xHM7ffANbbYFnYA0Q/8pmotfkaEG/MtMPqpxIGYu0v5EhqFQf/AehdPumYUNQSAwj791QVJ77czKX1JwIABOo9YsQ638chEkWDv/cP3FrQW285GY1y6zrCpPbrQZvRyJS18p3EUBYL9rU1rS+yOyR30H998NLEWPtHHwAAAABJRU5ErkJggg=='
+          longDescription: 'A highly-available key value store for shared configuration and service discovery'
+          providerDisplayName: 'Hashicorp'
+          documentationUrl: 'http://www.consul.io/'
+          supportUrl: 'http://www.consul.io/community.html'
+        requires: []
+        dashboard_client:
+          id: 'consul-dashboard'
+          secret: 'consul-dashboard-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: '2cb83bb4-2df9-11e4-a506-a6c5e4d22fb7'
+            name: 'free'
+            container:
+              command: '-server -bootstrap'
+              backend: 'docker'
+              image: 'progrium/consul'
+              tag: 'latest'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              uri:
+                uri: 'consul'
+                port: '8500/tcp'
+            description: 'Free Trial'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated Consul server v0.3.1'
+                - 'Consul server running inside a Docker container'
+      - id: '617b9186-2e5b-11e4-af5d-a6c5e4d22fb7'
+        name: 'rethinkdb'
+        description: 'RethinkDB is built to store JSON documents'
+        bindable: true
+        tags:
+          - 'rethinkdb'
+          - 'document'
+        metadata:
+          displayName: 'RethinkDB 1.14.0'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAAB5lBMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3QQMDvEAAAAoXRSTlMAAAECAwQFBggJCgsNEBIUFRYYGRocHR4gIyQlJigpKissLzAxMjQ2OTs8PT5AQ0ZHSUxNTlBSU1dYWltcXWBhYmRnaGltbnR1dnh5ent8fYCGiIyNkZKTlpyfoKGkpaaqrK2ur7Gys7S1tri5u7y9vr/AwsPExcbHyMrL0NHU1dbX2tve3+Dh4uPk5ufp6uvs7u/w8fP09fb3+Pn6+/z9/llehGsAAAJBSURBVHhexdLbN1RxGIfxt71NCCMUBSmkI0omHXU+oqRKEVFCKkkoiqZCEKkyqsH2/KettfcaI81sMz/W8tx9Lz7rvXll3QpaWywLbS9/+nmWwHkHmi6lykJLsOZ6y3K1HwiM015ZB9y9HYHqdXsBaN4cABdPAUMVuRESLD37+gAwmfcfPmvAxBmH2Oc4+QVmipbgwwa0JcjyOVvAu+8fnDYFdZESShHVMJawGLdD23qR0HQL1C3CLpiIl1BzjsEuP34NpyX0jkPDAt4GA44wsP6R2XgfvgrlEk6lcMKHn0BWWHgH3PPhQX5pYWFtmi4fnuG9hFc/Qz4M3WHibr75cUeYuIMfq44zD6X6QXphun+kFOZotji2GbgfaY3oeqA+2hrarXno3GiHawC4YY0qAKqscQGAZzY4agaASXPoHgA8urn6MEsOjpMwM8wRg1WcucYwywmOtUEAeqzlBmDYGo0A/IkLjsVlAN791iiYBeaPWCPzJ0CZ2GDJa3U35vrG7iZ3a75vZDz48PLY6j/JO3U8zld13AmJyvgmlCjjfGhTxvoo5KhiuQxdmiqOGYFSVSxFYBxVxXIbjPOqOOIR0LBJDYujGvh9J0sJi5zzAIw+rKwI2JWtdliSa+awafqUHRZJKesxbHhtbHBstiH7oCtgtcCnnTbYthIPeC9qalgy+oDHTjUsUXeBkb0K2Kz4O8xd09WwbHkDvEhSw+KonIeJEQVsVjAOqGJJfI46Fr1sThGb7RleARZnjYUVW1v8FyL2e+DwPxqxAAAAAElFTkSuQmCC'
+          longDescription: 'RethinkDB is built to store JSON documents'
+          providerDisplayName: 'RethinkDB'
+          documentationUrl: 'http://rethinkdb.com/'
+          supportUrl: 'http://rethinkdb.com/'
+        requires: []
+        dashboard_client:
+          id: 'rethinkdb-dashboard'
+          secret: 'rethinkdb-dashboard-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: '6194d79a-2e5b-11e4-af5d-a6c5e4d22fb7'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'library/rethinkdb'
+              tag: 'latest'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              uri:
+                prefix: 'rethinkdb'
+                port: '28015/tcp'
+            description: 'Free Trial'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated RethinkDB 1.14.0 server'
+                - 'RethinkDB 1.14.0 running inside a Docker container'
+      - id: 'fb68481a-a9ff-45a2-a88b-782c485e4400'
+        name: 'influxdb088'
+        description: 'InfluxDB service for application development and testing'
+        bindable: true
+        tags:
+          - 'influxdb'
+          - 'distributed'
+          - 'time-series'
+        metadata:
+          displayName: 'InfluxDB 0.8.8'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACoFBMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3SanooCAAAA33RSTlMAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKiwtLi8wMjM0NTY4OTo8Pj9AQUJDREVHSElKS01OT1BRUlNUVVZXWFpbXF9gYWJjZGVnaWprbW5vcHFyc3R1dnd4ent8fX5/gIGCg4SFiImKi4yNjo+QkZKTlJaXmJqbnp+hoqOkpaaoqaqrrK6vsLGytLW2t7i5u7y9vr/AwsPExcbJysvMzc7S09TV1tfY2drb3N3e3+Dh4uPl5ufo6uvs7e7v8PHy8/T19vf4+fr7/P3+UGg1LAAABGlJREFUeF6l1/tX03Ucx/F3G7swbi0TEEQoSEXUJlSWFkZqUBYpSYal3Ui0skiINNSsMFNLTCrMrNAyzDbCRpUlEQpJbsUthwzG+1/pc3l/zvbdxbOznr+9fnicbZ/z2XcA1/2PGIbQ4hv6caAxEa5ZBGxsR16HJRb8LMq2xoJPE3bGgn8i3KNARm1rc6UhOvwJ4a9pLxnky54SFV5KuFbOlL/k/CAqDM/5BB4tEKsKZZPWqDAsaGz9joHzVkhbe8iFVGEUWGZ2MNDpxIByBMrc5ehoyg+Drbdngyr9ImrrELbobz7GVwdj094JRLtNzRJp3M1Nwg7dyq2pF0UjNwbhw/KYFtB8ho2u1xfHAZQ6rg59NBt4y5Gq0uJFKGujfQZx2AxBbVC4TotfIjxhkAczhfg+BFeq8HotbkDKwld8LRslIdhySdrR6Vp8P9lzbJh2XWFjIA5C2i7s1QdBi/UdEj/OxhHkeZdJUPzOkfqb6K66ET3O/fMgCEPqtwxM8ht9J8p+5iCuWbxWBX02+p5rMZn5fNQjlcXGVjnG5zCR8S+iOyksXs2AOOpGheeyMUDj06ry+/hV2AxhcTXioBiPkh02AlhR24AlFNMLdoth+s3/FDNOaPE20OCcp+vWJPN9VN1+uOUXDt7V83Gc1IjETn0g3uRFxMuLF+7oYcCuk9r4UN0WuuRzBwU6GQeJM04xvTYAr0KRD2WHzRBcfpsPh3bG81HIcK/Jj8+iNkcahGSZKe4a3Z7PXrUpPIWqXxue8rBxod0zcvIuCF+eF3l7dRKPEe3kH3FRHy3fqvA4k46tRmJ1mBuAl26n6bL4hbXe0fnePM1X75LE80fFcsaD6A6kloNq5h98e8V7OYYUPYYKv0f0tUwD2TKFK0HVJsGVjIBfE59FYoBs2w2gyla4SNlMpKrZWEfjFBDW9rm0Z3UAlpKHcwGWKPwWw4YzYnhs4fGMc9z25oKuhp/GIVO+wjXASt4/jugohBBsuac0DyCxuvXjTckAL0iyA36QdiIbRAkFaQAhuMKNiMen00rxSDNstg0L3ASatHgFXRaDnMX+k7v5YM8k4u+Ga2AnysrlvFfh2/h6jY11kXESUrvF1L9Bc1TcntQxeunwOEXhE1a2prWpuUWCfWxUCFWw89i+4iAMXUoPvZJk4zdy3IforddJPHsKsa+ubBZsnETWQb0Wr0QVuseY/bMoq7wsFaiECyhy0Vf4eS2GNS5GvupGWUcGBGT6ErV1B2EwLy2bA4Yn+7n9MN4vs2YZWhjwDgZqwsFZ7Ijt/vnIRfnk9JVDTmntebL/RMDQjHgaVJVIrdf8HhyIhN9G/FENs5tsg9z6E2L1p0fC29hRq3E3UpvV0W13oaclEyLhFxHHFtJ4AEP/gL7eCBAJPzHOwcty5GqfaVREbJtE0Uo5j8rVZYgKH1B3nN5jOx/deRAVthPupa1b8eaexywQHf4i7H8JUeKNhGtjwcZv5AsnxILBXNeHl/ekQBQ49v4Dj//tqcqTIOkAAAAASUVORK5CYII='
+          longDescription: 'Time series database for development and testing'
+          providerDisplayName: ''
+          documentationUrl: 'http://influxdb.com/docs/v0.8/introduction/getting_started.html'
+          supportUrl: 'https://customers.influxdb.com/'
+        dashboard_client:
+          id: 'influxdb-dashboard'
+          secret: 'influxdb-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: '9de8d7a4-79d7-4ced-b6ba-53ea794cce29'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'tutum/influxdb'
+              tag: '0.8.8'
+              persistent_volumes:
+                - '/data'
+            credentials:
+              username:
+                key: 'INFLUXDB_USERNAME'
+                value: 'root'
+              password:
+                key: 'INFLUXDB_PASSWORD'
+                value: 'root'
+              uri:
+                prefix: 'http'
+                port: '8086/tcp'
+            description: 'Free Instance'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated InfluxDB server'
+      - id: 'c78b2904-caa2-412a-ad59-0244dbb8fc6f'
+        name: 'mosquitto14'
+        description: 'Mosquitto service for application development and testing'
+        bindable: true
+        tags:
+          - 'mqtt'
+          - 'messaging'
+          - 'lightweight'
+        metadata:
+          displayName: 'Mosquitto 1.4'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACkVBMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3QCEH4oAAAA2nRSTlMAAAECAwQFBgcJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiQlJigpKissLS4vMDEyMzQ2Nzg5Ojs8PT9AQUJDREZHSUpLTE5PUFFSU1RVVlhZW1xdXl9jZGZnaGlqbG1ub3B0dXZ3eHl7fX5/gIKDhIWGh4iJi46QkZKTlJaXmJmanJ+goaKkpaanqKmqq6yvsLGys7S1t7i5uru8vb6/wMLDxMXGx8jJysvNzs/Q0dLT1NXW2Nna29ze3+Di4+Tl5ufo6err7O3u7/Dx8vP09fb3+Pn6+/z9/oOOhDMAAAOqSURBVHhe7dbdVxR1AIfxb7sLCBJCKSqYINibFEJapJpUWQZaGWVmgZWFUoaWoUW+hZGWWGZYGQJBZYZaqSC+ZyhUKrCCLbv7/DXlzM5hAKSFrjr5XM1cfGbO+f7mYnTdv+g/hK9hBdfYvVPUs+Bx8gnO3jREnNYC/Dh8SPi+VgA+dQ4Bz/NAxfQOKBo8fs4HZWF6DHhmsHg58K5TUiF4pg0KO9cCrxnA8TH8NmEQOGwb+J6VWcQBqB8RNI6sgM5sBYotBr50BYlH1UHrDFM6Zm7zAPifDA6Pb4Szdxr0hiWNADStTFBQeNIZOJ4kSRkfXAbwV2SFBLl2xnnYP0qKyjsIwLlVxoNcqbmljTP+Ac/ugMoopZdcAqDqiTApds6qajfA+wPjBV3wSczCfQD8viY55K68Lcexao/oDw97vrrZ52vZVwnUrm8FoCbv8dW1HZY7ufXF7yCnH+yooldtNV+cstylmqKs0ZJyoKIffCs9a/dY8Ojm3DRr6kg3vvi+eMSf9K2t8o3ZI2XvQ8jviaNm3R+jYnp1Zv1TaSmJRuOijSKkh6Dejl2FndC19zzBlm7Daxhkxd14vBez6szMBnr09dYdgapqzGp/+rvd3XihBZZIznLsfXWb+q0bL7bwq9JED2w6hhXeDaMGxrMsnC3thM1aAXDYi9GFF1wDYedhjI6H6UFoG6Mt4MW/zINZXeoAWO8BcDZFIQ3wsrQH3oZDczow87457Ko4sRNfdXlBjLQIjoRKzTRFnIJl0/8g0M+pV8NlsEFGS2GxFAl79DB0JN181NKepc5+cQa0BiZ9GgqkO+AjaTvs0o2VWFWM6Qc7foBXZPYArJUehW1SXBvMl2s1Vs2ZfXEOnAiT2SSDjb2MN8E4/nPR0ryLlvblO3rh8F9grgLFwjeSNsJGyVkHJZImfI/V9oieeDnUykpdNEpK8OKJl1K9MF9S6Fs+S+8fa8dxbvxp3fhX2iSpFN6R9Dq0T5Ske49Z+vQkGy6FUnVXB+GSbvHTOVpy7YaDV+4Vsc6P2YWpFla6H3ecDX8OSYGjL5IU2wSbZJRxCLP2mRauheWyVQL3SNJkcI+UNM0LC0wdusyNUWu6iefB6XA7XmlNXw6FkpQPl26XWVypH4CWcQY+Ajmylwu5Br4bLkZLcuyE+uEKNHkHAN86r+Dkz/Y6ZC8bVsiokgbjjTEn6bR9WlPLuoC55trXq0eJBYtSTTwlyxG4OJAie/Ev7Tr8yP/lf/sa/guNjfN4Hpo9YgAAAABJRU5ErkJggg=='
+          longDescription: 'Mosquitto service for development and testing running inside a Docker container'
+          providerDisplayName: ''
+          documentationUrl: 'http://mosquitto.org/documentation/'
+          supportUrl: 'http://mosquitto.org/support/'
+        dashboard_client:
+          id: 'mosquitto-dashboard'
+          secret: 'moquitto-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: '686e1adf-17f3-461b-a556-495abc34a6e9'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'ansi/mosquitto'
+              tag: 'latest'
+              persistent_volumes:
+                - '/data'
+            description: 'Free Instance'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated Mosquitto server'
+      - id: '6b33e19e-26d3-11e5-a4ba-00155d3ca71c'
+        name: 'ipython'
+        description: 'IPython notebook server with the full SciPy stack + more'
+        bindable: true
+        tags:
+          - 'ipython'
+        metadata:
+          displayName: 'ipython'
+          imageUrl: ''
+          longDescription: 'Docker container for the [SciPy stack](../scipystack) and configured IPython notebook server.'
+          providerDisplayName: ''
+          documentationUrl: 'http://ipython.org/documentation.html'
+          supportUrl: 'https://github.com/ipython/ipython/wiki/Frequently-asked-questions'
+        dashboard_client:
+          id: 'ipython-dashboard'
+          secret: 'ipython-secret'
+          redirect_uri: http://cf-containers-broker.{{ cf_domain }}/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: 'd2b7da94-26d0-11e5-8396-00155d3ca71c'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'ipython/scipyserver'
+              tag: 'latest'
+              environment: ['USE_HTTP=1']
+            credentials:
+              password:
+                key: 'PASSWORD'
+              uri:
+                prefix: 'https'
+            description: 'Free Instance'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'Dedicated IPython running inside a Docker container'
+      - id: '52216016-3211-11e5-bf02-00155d3ca702'
+        name: 'rstudio'
+        description: 'RStudio IDE for programming in R langauge'
+        bindable: true
+        tags:
+          - 'rstudio'
+          - 'r'
+        metadata:
+          displayName: 'rstudio'
+          imageUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAACxFBMVEUAAABWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3QI/HwsAAAA63RSTlMAAQIDBAUGBwgJCgsMDQ4PEBITFBUWFxgZGhscHR4fICEiIyQlJicoKSorLC0uLzAyMzQ1Njo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZXF1eX2BhYmNkZWZnaGpsbm9wcXJzdHZ3eHp7fH1+f4CBgoOEhYaHiImKi4yNj5CTlJWWl5iZmpydnp+goaKjpKWoqaqrrK6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs/Q0dLT1NXW19jZ2tzd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+8B+UWwAABRdJREFUeF6ll/F/zHUcxz/ntjsztg0Vy6QJjWlKyiSCGQtEtYJKGsoyLWuklA1lG5ZIiQk2gqWxLcrQsMYYtRnQzV1z2z3/ib7f79187/vd3W6Px71++bwfrx+e9/3c+/N5v98f4VmBQRFTVuwrAsD6e0FGYu+gQNFuBfSOW3ceRf9ZrTYUnV8zKtLQPsBzGacArpftX79mwfz5yVmbdp6pAzid/rzwrdica8C13NkvRHVr8ToPHPFWdhVwJWeQD0CXnKvA4fjIznpwcO+J+4G69W0C4mqA47GBHjdrMDxTAo7aBK8A4wfQfGmaaEOJ5xyQavIMiNgGd78OEm0qNPcObOjpCdDvKFyeJnzq1Qvw81Ot/UfKoWSgaIdij0B5tN4NuQC5St4GR+sVE67bxj4o7aEDnISdodL6xg1Hcys1NW4brUnMCfg+QJOhLAclD0nBu9Bk0ctqB6qndhKq/oA0d8BLFmr6yR+3h5urp0+ZqtHkeV8ernTAwRgV8HAVjFcB5hM4RstBz99YJDxpcEoF/BWnGvF3qez6APApLBQKoIxxwrP65sI/0aqxEjJb4j7wS7jzy4q5+LQXQvASqFQN8xVqW07Dd1jiXeEnKHpFClfhVFNJ8RcTZIIpG8eHKuFZSDcq0YC75Le4vfbevN/oYLMUnsfeKAuA8mGS88RFLrjd0jxudleCrGb7S6r9YkbKZTZIwVm2pklaunPHwSq4M1ayFnFvpgroD0vkNfI0x4VGRS7AGJdhGpqO8mvGZpa55W4zFnmdDKO0gF9dgImqtdjBamk5xiazar5s4zUJv5Za4RNg3k6Bku9vg1Qz4hRFQnQ5SYZvgFhHoZwkDUB8Q71J9IThvgHRFUqmPtcC3mlsGC+mUB/uEzA4HyYpt3CjeznrY7GniqUc6OIF0HK6Ypefhd3yQXXwsXBXHTmigLVmL4C3o6KGzJi5sqAa2NpDObK3x2oAhygVR5kvvABsFkuDzWYHauI7SM7MexQLjVZQLuB1z4BD3JfUaLNZCp2lNuYK98doAckguDfOMyBiblJS0puTBvR1msa4q/CZ0Go4CP4d7QmgV6+0ZlrbQ9oNCNsCjR+ZWwG8b0GnxytomidaaTh4/xPTHQ2yGpV9G/PgzKNCr2TwnsZzNDdJgrIoyet4DA6oVVRNY1sHKT8zK3NNJdQNlcygUsg0CaE/SG0dZSU9AzdDtVyHuh6F94XQH2Xfl8m8Cm7LJXHQZRokpv4y+b7OAUub+FPuCElWysKE7jq3q6AUwg65HG+HVKErKK1LWqAodgEmGwOMTq8YlhmEMP7N9ZiADpqSpi+q3eNSky+xUQHkLU5ZMDJEds0XYbq0JsDelFl9DWpR1Zf1J38EUAAVANh/CJX9YfXU9xcGkQ1QNUQt67rGYsyCW7vzf5In0lmFu3btuQXLnXXdzq6OQvTamF8Ge41qY1Fbm6u5FoWFhYbK3xggraFRJVxzso/QPEcIQ3BotzQwqa1N21x7lDJSaLTEfsMZRDZQ+5jzYl3HpDZXtb07AfrDluuod0WzYYuyzWFgUtu7dsAIyYfliQkPlPiVlcNOgEFshTkTEuIX1nAjUB0wtCOOmGpDJ+vQBzNKDS69Z1BHHO2QJcwj8q5Wu6ky2+2JMLdS8QpmBKtDlnbMk9WpW1d3uXcyU7hihRjUMU8/aPqWftDUj7o+pY66/g7b/o/7/j84/H/y+P/o8v/Z5//D0/+nr/+Pb7+f//8D7AyyegDiVsgAAAAASUVORK5CYII='
+          longDescription: 'Rstudio hosted in Trusted Analytics Platform'
+          providerDisplayName: 'RStudio'
+          documentationUrl: 'https://support.rstudio.com/hc/en-us/categories/200035113-Documentation'
+          supportUrl: 'https://support.rstudio.com'
+        dashboard_client:
+          id: 'rstudio-dashboard'
+          secret: 'rstudio-secret'
+          redirect_uri: (( meta.cfcontainersbroker.protocol "://" meta.cfcontainersbroker.external_host "/manage/auth/cloudfoundry/callback" ))
+        plans:
+          - id: '4d457046-3211-11e5-bd0e-00155d3ca702'
+            name: 'free'
+            container:
+              backend: 'docker'
+              image: 'rocker/rstudio'
+              tag: 'latest'
+            credentials:
+              username:
+                key: 'USER'
+              password:
+                key: 'PASSWORD'
+              uri:
+                prefix: 'rstudio'
+            description: 'Free Instance'
+            metadata:
+              costs:
+                - amount:
+                    usd: 0.0
+                  unit: 'MONTHLY'
+              bullets:
+                - 'RStudio IDE running inside a Docker container'

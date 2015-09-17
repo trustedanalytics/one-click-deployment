@@ -1,0 +1,44 @@
+# Copyright (c) 2015 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# cfbin* variables related to provision CF CLI binary
+cfbinrel = linux64-binary
+cfbinver = latest
+cfbinurl = https://cli.run.pivotal.io/stable
+
+# list of manifests used to describe the appstack.
+# YAML files will be merged to a single YAML, with the values of latter files being less important
+# if multiple files hold different values of the same key, the value coming from the first file will be used
+stack_mflist = settings.yml appstack.yml
+
+# an identifier used to mark terminal messages with meaningful label
+stackpfx = {{ cloudfoundry_mkappstack_stackpfx }}
+
+# used to construct common artifact URL scheme (see afcturl below)
+artifact_pfx = {{ cloudfoundry_mkappstack_artifact_pfx }}
+
+# used to construct common artifact URL scheme (see afcturl below)
+# artifact_ver will be a fallback if no env::VERSION provided in manifest
+artifact_ver = latest
+
+# afcturl can be constructed of any runtime MAKE variables.
+# it is less important than an app env::artifact_srcurl value
+# $(appname) takes value of env::artifact_name if it exists, or application name declared in YAML manifest
+# $(appname) takes value of env::VERSION if it exists, or $(artifact_ver)
+afcturl = $(artifact_pfx)/$(appname).zip
+
+# uncomment the vars below only if you are behind a proxy; otherwise leave as is
+#proxy = http://proxy.mydomain.org:8080/
+#noproxy = 127.0.0.1,localhost,localhost.localdomain,mydomain.org

@@ -1,0 +1,65 @@
+# Copyright (c) 2015 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+
+- hosts: cloudera-manager:cloudera-master:cloudera-worker:cloudera-gateway
+  roles:
+    - common
+    - cloudera_manager_repository
+  post_tasks:
+    - yum: name=oracle-j2sdk1.7 state=present
+      when: ansible_os_family == "RedHat"
+      become: yes
+    - apt: name=oracle-j2sdk1.7 state=present
+      when: ansible_os_family == "Debian"
+      become: yes
+
+- hosts: cloudera-manager
+  roles:
+    - cloudera_manager_server_database
+    - cloudera_manager_server
+
+- hosts: cloudera-manager:cloudera-master:cloudera-worker:cloudera-gateway
+  roles:
+    - role: cloudera_manager_agent
+      server_host: "{{ groups['cloudera-manager'][0] }}"
+
+- hosts: cloudera-manager
+  roles:
+    - cm_api
+    - role: cloudera_cdh
+      cluster_hosts: "{{ cloudera_cluster_hosts }}"
+      cms_hosts: "{{ cloudera_cms_hosts }}"
+      zookeeper_server_hosts: "{{ cloudera_zookeeper_server_hosts }}"
+      hdfs_nn_hosts: "{{ cloudera_hdfs_nn_hosts }}"
+      hdfs_snn_hosts: "{{ cloudera_hdfs_snn_hosts }}"
+      hdfs_httpfs_hosts: "{{ cloudera_hdfs_httpfs_hosts }}"
+      hdfs_dn_hosts: "{{ cloudera_hdfs_dn_hosts }}"
+      hbase_master_hosts: "{{ cloudera_hbase_master_hosts }}"
+      hbase_rs_hosts: "{{ cloudera_hbase_rs_hosts }}"
+      yarn_nm_hosts: "{{ cloudera_yarn_nm_hosts }}"
+      yarn_rm_hosts: "{{ cloudera_yarn_rm_hosts }}"
+      spark_history_server_hosts: "{{ cloudera_spark_history_server_hosts }}"
+      hive_metastore_hosts: "{{ cloudera_hive_metastore_hosts }}"
+      hive_gateway_hosts: "{{ cloudera_hive_gateway_hosts }}"
+      oozie_server_hosts: "{{ cloudera_oozie_server_hosts }}"
+      hue_server_hosts: "{{ cloudera_hue_server_hosts }}"
+      kafka_broker_hosts: "{{ cloudera_kafka_broker_hosts }}"
+
+- hosts: cloudera-master:cloudera-worker:cloudera-gateway
+  roles:
+    - analytics_tool_kit
+
+# vi:et:sw=2 ts=2 sts=2 ft=ansible
