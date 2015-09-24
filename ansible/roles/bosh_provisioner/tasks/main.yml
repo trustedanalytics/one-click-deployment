@@ -1,0 +1,68 @@
+# Copyright (c) 2015 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+
+- include: git.yml
+
+- git: repo=https://github.com/cppforlife/bosh-provisioner.git
+       dest={{ ansible_user_dir }}/bosh-provisioner
+
+- file: path={{ item }} state=directory
+  with_items:
+    - "{{ config['assets_dir'] }}"
+    - "{{ config['repos_dir'] }}"
+    - "{{ config['blobstore']['options']['blobstore_path'] }}"
+  become: yes
+
+- copy: src={{ ansible_user_dir }}/bosh-provisioner/assets/
+        dest={{ config["assets_dir"] }}
+  notify:
+    - bosh-provisioner
+  become: yes
+
+# https://github.com/ansible/ansible/issues/11223
+- copy:
+    content: "{{ config | to_nice_json }}"
+    dest: "{{ config_path }}"
+  notify:
+    - bosh-provisioner
+  become: yes
+
+- copy: src={{ config["assets_dir"] }}/bosh-provisioner
+        dest=/usr/local/sbin
+        mode="a+x"
+  notify:
+    - bosh-provisioner
+  become: yes
+
+- template: src=bosh_lite_manifest_template.yml.j2
+            dest={{ config["deployment_provisioner"]["manifest_path"] }}
+            validate='python -c "import yaml; yaml.load(file('%s', 'r'))"'
+  notify:
+    - bosh-provisioner
+  become: yes
+
+- meta: flush_handlers
+
+- file: name=/vagrant/tmp/compiled_package_cache state=directory
+  become: yes
+
+- file: name={{ item }} owner=vcap group=vcap recurse=yes
+  with_items:
+    - /vagrant/tmp
+    - "{{ config['blobstore']['options']['blobstore_path'] }}"
+  become: yes
+
+# vi:et:sw=2 ts=2 sts=2 ft=ansible
