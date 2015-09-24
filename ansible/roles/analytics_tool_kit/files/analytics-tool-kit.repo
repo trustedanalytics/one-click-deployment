@@ -1,0 +1,5 @@
+[analytics-tool-kit]
+name=Analytics Tool Kit
+baseurl=https://analytics-tool-kit.s3-us-west-2.amazonaws.com/public/yum/redhat/6/x86_64/latest/
+enabled=1
+gpgcheck=0
