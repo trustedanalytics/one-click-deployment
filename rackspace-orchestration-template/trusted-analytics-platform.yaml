@@ -92,17 +92,14 @@ parameters:
   cloudfoundry_flavor:
     label: Server Size
     type: string
-    default: 30 GB Memory v1
+    default: 60 GB Memory v1
     description: Server size for the Applications server
     constraints:
       - allowed_values:
-        - 30 GB Compute v1
         - 60 GB Compute v1
-        - 30 GB Memory v1
         - 60 GB Memory v1
         - 120 GB Memory v1
         - 240 GB Memory v1
-        - 30 GB I/O v1
         - 60 GB I/O v1
         - 90 GB I/O v1
         - 120 GB I/O v1
