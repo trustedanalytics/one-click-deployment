@@ -1,0 +1,236 @@
+applications:
+- name: atk-broker
+  env:
+    CF_API: http://api.{{ cf_domain }}
+    CF_USER: admin
+    CF_PASS: {{ cf_admin_password }}
+    IMAGE_URL: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACN1BMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3R3YQTsAAAAvHRSTlMAAAECAwQGBwgJCgsMDQ4PEBESExQVFhcYGRocHR4gJCcoKSssLS4vMTM0NTY3ODk6PD9BQkNERUZHSElLTE1OT1BRUlNWV1pbXV5fYmNkZ2hpa2xtcnN0dnd4eXp7fH1+gIGChIWGh4iKjI6QkZKUlZaXmJ2goqSlp6mrrK2vsLGys7S1tre4vL2+v8DBwsPExcbHyMnKzM/R09TV1tfZ29ze3+Dh4uTn6Onq6+zt7/Dx8vP19vf5+vz9/jdVeyQAAAM9SURBVHhe5dThUxRlHMDxX3vrqUQSFmGWFoEXqFZFpVhpBaUVJkqGqUFogSilKCkRFFhUQUlnQKVGQEAeJVjHwXH3/eNy92af2Znbe24dXzV9X+2++Mzs/n67j9xxG/2XsWhavqM1PANLk5+/vUFU4gff2zyLirO3go2aOQDiU5PXAXjOP879DGBwf5EpIjnl3XDMNy4YAYYfc26fjsFev/hOyx4NOPbZGAyt9Iu7IPG6OO2Mw3Ce+MR7gDeVrYpDWNlsePV1+FDZ3QnozxG/uBHGVqincFtZt+0+PTZnoNKx+4BeNauGJIt7tbgCJpxBH7BsUFIZLQBLJTp8HJqd6zB0KXsGmINWHR6ArQ7+CHa6bX8x/KzD0/CgGrX6LM1z2JOLMqvDUTAcXARfpmwHqclNgg4D4hSIEjFFJNjpTG5cj+OwSumLMB8+Vd0L9FhW/iCpwxNQqvBJnDpMywYTXMuMg21AtcKPnh5acFnZCIMZ8ZofgL48cbUsVH16qD1l5QicyISfiQAtpmQq8BtUeGPz/STMvyqZq4SZZZ547ffAaLHG5k7Bu+KFyyPAJ7mi6TxE8jywcSQBi/tF11HgFUnH+V8AU5t11GgGzkg6fmQM6Futs4UXgAvBdLzjH0jUGxp616E5oDdH0vDhJNyo8DIbG18KrS8qr/10AaDVlDR8HBgr8rL3X0PF78+LpOG3gH7P1w3+iGq8dqWk45JF+0/16izwy583/rraU7/F+9z+GoaXe9o3cB2FnngDxB+2wZN1dU+4bfE8fGdqcRN8bIF7vgX4plDZ3FGIrBEtvgT2kvqwGwm4vuPEU6LHc3C3iGyGRFsH4OyjBnhHsmCIyc0OwgmRTvggBcqsHRjZ8ZKROl4aRbqhyQb5EzCeL9lwFKwhbYdE+3ngBQsYPRALSVY8Ai+KSOASdsP2wBqA1yQ7boEuuVlBGOArezdVwCnxgcsg+bglAtsOHSizQek8XAz6wTIAEwXi6oFpmC4UXzgUh8trRbV+DGJl4g9LLRCplFTG7llgl/jF0gxw5dj20pKt7/0KJPeJfyy1cVz9/bLcCpbQAKrOdeIfp9p08qcozA42PiTiE99G/0f8L79Trz+R1ZvwAAAAAElFTkSuQmCC
+- name: se-broker
+  env:
+    CF_API: http://api.{{ cf_domain }}
+    CF_USER: admin
+    CF_PASS: {{ cf_admin_password }}
+    IMAGE_URL: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACN1BMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3R3YQTsAAAAvHRSTlMAAAECAwQGBwgJCgsMDQ4PEBESExQVFhcYGRocHR4gJCcoKSssLS4vMTM0NTY3ODk6PD9BQkNERUZHSElLTE1OT1BRUlNWV1pbXV5fYmNkZ2hpa2xtcnN0dnd4eXp7fH1+gIGChIWGh4iKjI6QkZKUlZaXmJ2goqSlp6mrrK2vsLGys7S1tre4vL2+v8DBwsPExcbHyMnKzM/R09TV1tfZ29ze3+Dh4uTn6Onq6+zt7/Dx8vP19vf5+vz9/jdVeyQAAAM9SURBVHhe5dThUxRlHMDxX3vrqUQSFmGWFoEXqFZFpVhpBaUVJkqGqUFogSilKCkRFFhUQUlnQKVGQEAeJVjHwXH3/eNy92af2Znbe24dXzV9X+2++Mzs/n67j9xxG/2XsWhavqM1PANLk5+/vUFU4gff2zyLirO3go2aOQDiU5PXAXjOP879DGBwf5EpIjnl3XDMNy4YAYYfc26fjsFev/hOyx4NOPbZGAyt9Iu7IPG6OO2Mw3Ce+MR7gDeVrYpDWNlsePV1+FDZ3QnozxG/uBHGVqincFtZt+0+PTZnoNKx+4BeNauGJIt7tbgCJpxBH7BsUFIZLQBLJTp8HJqd6zB0KXsGmINWHR6ArQ7+CHa6bX8x/KzD0/CgGrX6LM1z2JOLMqvDUTAcXARfpmwHqclNgg4D4hSIEjFFJNjpTG5cj+OwSumLMB8+Vd0L9FhW/iCpwxNQqvBJnDpMywYTXMuMg21AtcKPnh5acFnZCIMZ8ZofgL48cbUsVH16qD1l5QicyISfiQAtpmQq8BtUeGPz/STMvyqZq4SZZZ547ffAaLHG5k7Bu+KFyyPAJ7mi6TxE8jywcSQBi/tF11HgFUnH+V8AU5t11GgGzkg6fmQM6Futs4UXgAvBdLzjH0jUGxp616E5oDdH0vDhJNyo8DIbG18KrS8qr/10AaDVlDR8HBgr8rL3X0PF78+LpOG3gH7P1w3+iGq8dqWk45JF+0/16izwy583/rraU7/F+9z+GoaXe9o3cB2FnngDxB+2wZN1dU+4bfE8fGdqcRN8bIF7vgX4plDZ3FGIrBEtvgT2kvqwGwm4vuPEU6LHc3C3iGyGRFsH4OyjBnhHsmCIyc0OwgmRTvggBcqsHRjZ8ZKROl4aRbqhyQb5EzCeL9lwFKwhbYdE+3ngBQsYPRALSVY8Ai+KSOASdsP2wBqA1yQ7boEuuVlBGOArezdVwCnxgcsg+bglAtsOHSizQek8XAz6wTIAEwXi6oFpmC4UXzgUh8trRbV+DGJl4g9LLRCplFTG7llgl/jF0gxw5dj20pKt7/0KJPeJfyy1cVz9/bLcCpbQAKrOdeIfp9p08qcozA42PiTiE99G/0f8L79Trz+R1ZvwAAAAAElFTkSuQmCC
+- name: gateway-broker
+  env:
+    CF_API: http://api.{{ cf_domain }}
+    CF_USER: admin
+    CF_PASS: {{ cf_admin_password }}
+    IMAGE_URL: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACN1BMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3R3YQTsAAAAvHRSTlMAAAECAwQGBwgJCgsMDQ4PEBESExQVFhcYGRocHR4gJCcoKSssLS4vMTM0NTY3ODk6PD9BQkNERUZHSElLTE1OT1BRUlNWV1pbXV5fYmNkZ2hpa2xtcnN0dnd4eXp7fH1+gIGChIWGh4iKjI6QkZKUlZaXmJ2goqSlp6mrrK2vsLGys7S1tre4vL2+v8DBwsPExcbHyMnKzM/R09TV1tfZ29ze3+Dh4uTn6Onq6+zt7/Dx8vP19vf5+vz9/jdVeyQAAAM9SURBVHhe5dThUxRlHMDxX3vrqUQSFmGWFoEXqFZFpVhpBaUVJkqGqUFogSilKCkRFFhUQUlnQKVGQEAeJVjHwXH3/eNy92af2Znbe24dXzV9X+2++Mzs/n67j9xxG/2XsWhavqM1PANLk5+/vUFU4gff2zyLirO3go2aOQDiU5PXAXjOP879DGBwf5EpIjnl3XDMNy4YAYYfc26fjsFev/hOyx4NOPbZGAyt9Iu7IPG6OO2Mw3Ce+MR7gDeVrYpDWNlsePV1+FDZ3QnozxG/uBHGVqincFtZt+0+PTZnoNKx+4BeNauGJIt7tbgCJpxBH7BsUFIZLQBLJTp8HJqd6zB0KXsGmINWHR6ArQ7+CHa6bX8x/KzD0/CgGrX6LM1z2JOLMqvDUTAcXARfpmwHqclNgg4D4hSIEjFFJNjpTG5cj+OwSumLMB8+Vd0L9FhW/iCpwxNQqvBJnDpMywYTXMuMg21AtcKPnh5acFnZCIMZ8ZofgL48cbUsVH16qD1l5QicyISfiQAtpmQq8BtUeGPz/STMvyqZq4SZZZ547ffAaLHG5k7Bu+KFyyPAJ7mi6TxE8jywcSQBi/tF11HgFUnH+V8AU5t11GgGzkg6fmQM6Futs4UXgAvBdLzjH0jUGxp616E5oDdH0vDhJNyo8DIbG18KrS8qr/10AaDVlDR8HBgr8rL3X0PF78+LpOG3gH7P1w3+iGq8dqWk45JF+0/16izwy583/rraU7/F+9z+GoaXe9o3cB2FnngDxB+2wZN1dU+4bfE8fGdqcRN8bIF7vgX4plDZ3FGIrBEtvgT2kvqwGwm4vuPEU6LHc3C3iGyGRFsH4OyjBnhHsmCIyc0OwgmRTvggBcqsHRjZ8ZKROl4aRbqhyQb5EzCeL9lwFKwhbYdE+3ngBQsYPRALSVY8Ai+KSOASdsP2wBqA1yQ7boEuuVlBGOArezdVwCnxgcsg+bglAtsOHSizQek8XAz6wTIAEwXi6oFpmC4UXzgUh8trRbV+DGJl4g9LLRCplFTG7llgl/jF0gxw5dj20pKt7/0KJPeJfyy1cVz9/bLcCpbQAKrOdeIfp9p08qcozA42PiTiE99G/0f8L79Trz+R1ZvwAAAAAElFTkSuQmCC
+- name: hdfs-broker
+  env:
+    USER_PASSWORD: c1oudc0w
+    BROKER_PATH: /org/intel/hdfsbroker
+    HADOOP_PROVIDED_PARAMS: '{"HADOOP_CONFIG_KEY":{"fs.defaultFS":"hdfs://hadoop:8020","hadoop.ssl.require.client.cert":"false","dfs.client.read.shortcircuit.skip.checksum":"false","hadoop.ssl.client.conf":"ssl-client.xml","hadoop.proxyuser.mapred.hosts":"*","dfs.replication":"1","hadoop.security.auth_to_local":"DEFAULT","hadoop.proxyuser.flume.hosts":"*","dfs.domain.socket.path":"/var/run/hdfs-sockets/dn","dfs.https.port":"50470","hadoop.proxyuser.hdfs.groups":"*","dfs.client.read.shortcircuit":"false","dfs.namenode.name.dir":"file:///dfs/nn","dfs.namenode.http-address":"hadoop:50070","dfs.client.use.datanode.hostname":"false","dfs.datanode.hdfs-blocks-metadata.enabled":"true","hadoop.security.authorization":"false","hadoop.ssl.server.conf":"ssl-server.xml","dfs.client.domain.socket.data.traffic":"false","hadoop.proxyuser.HTTP.hosts":"*","hadoop.proxyuser.hive.hosts":"*","dfs.https.address":"hadoop:50470","hadoop.proxyuser.httpfs.groups":"*","hadoop.proxyuser.httpfs.hosts":"*","dfs.blocksize":"134217728","hadoop.security.authentication":"simple","hadoop.proxyuser.hdfs.hosts":"*","hadoop.security.instrumentation.requires.admin":"false","hadoop.proxyuser.hue.hosts":"*","hadoop.proxyuser.yarn.groups":"*","dfs.namenode.acls.enabled":"false","hadoop.proxyuser.oozie.hosts":"*","hadoop.rpc.protection":"authentication","fs.permissions.umask-mode":"022","hadoop.proxyuser.mapred.groups":"*","hadoop.proxyuser.oozie.groups":"*","hadoop.proxyuser.hue.groups":"*","hadoop.security.group.mapping":"org.apache.hadoop.security.ShellBasedUnixGroupsMapping","io.compression.codecs":"org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.BZip2Codec,org.apache.hadoop.io.compress.DeflateCodec,org.apache.hadoop.io.compress.SnappyCodec,org.apache.hadoop.io.compress.Lz4Codec","hadoop.ssl.keystores.factory.class":"org.apache.hadoop.security.ssl.FileBasedKeyStoresFactory","hadoop.proxyuser.hive.groups":"*","hadoop.proxyuser.yarn.hosts":"*","dfs.namenode.servicerpc-address":"hadoop:8022","hadoop.proxyuser.flume.groups":"*","hadoop.proxyuser.HTTP.groups":"*"}}'
+    SPRING_PROFILES_ACTIVE: cloud,insecure
+- name: kafka-broker
+  memory: 128M
+  env:
+    CREDENTIALS: '{"uri": "hadoop:9092"}'
+    IMAGE_URL: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAMAAAANIilAAAACN1BMVEUAAAD///9WX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3RWX3R3YQTsAAAAvHRSTlMAAAECAwQGBwgJCgsMDQ4PEBESExQVFhcYGRocHR4gJCcoKSssLS4vMTM0NTY3ODk6PD9BQkNERUZHSElLTE1OT1BRUlNWV1pbXV5fYmNkZ2hpa2xtcnN0dnd4eXp7fH1+gIGChIWGh4iKjI6QkZKUlZaXmJ2goqSlp6mrrK2vsLGys7S1tre4vL2+v8DBwsPExcbHyMnKzM/R09TV1tfZ29ze3+Dh4uTn6Onq6+zt7/Dx8vP19vf5+vz9/jdVeyQAAAM9SURBVHhe5dThUxRlHMDxX3vrqUQSFmGWFoEXqFZFpVhpBaUVJkqGqUFogSilKCkRFFhUQUlnQKVGQEAeJVjHwXH3/eNy92af2Znbe24dXzV9X+2++Mzs/n67j9xxG/2XsWhavqM1PANLk5+/vUFU4gff2zyLirO3go2aOQDiU5PXAXjOP879DGBwf5EpIjnl3XDMNy4YAYYfc26fjsFev/hOyx4NOPbZGAyt9Iu7IPG6OO2Mw3Ce+MR7gDeVrYpDWNlsePV1+FDZ3QnozxG/uBHGVqincFtZt+0+PTZnoNKx+4BeNauGJIt7tbgCJpxBH7BsUFIZLQBLJTp8HJqd6zB0KXsGmINWHR6ArQ7+CHa6bX8x/KzD0/CgGrX6LM1z2JOLMqvDUTAcXARfpmwHqclNgg4D4hSIEjFFJNjpTG5cj+OwSumLMB8+Vd0L9FhW/iCpwxNQqvBJnDpMywYTXMuMg21AtcKPnh5acFnZCIMZ8ZofgL48cbUsVH16qD1l5QicyISfiQAtpmQq8BtUeGPz/STMvyqZq4SZZZ547ffAaLHG5k7Bu+KFyyPAJ7mi6TxE8jywcSQBi/tF11HgFUnH+V8AU5t11GgGzkg6fmQM6Futs4UXgAvBdLzjH0jUGxp616E5oDdH0vDhJNyo8DIbG18KrS8qr/10AaDVlDR8HBgr8rL3X0PF78+LpOG3gH7P1w3+iGq8dqWk45JF+0/16izwy583/rraU7/F+9z+GoaXe9o3cB2FnngDxB+2wZN1dU+4bfE8fGdqcRN8bIF7vgX4plDZ3FGIrBEtvgT2kvqwGwm4vuPEU6LHc3C3iGyGRFsH4OyjBnhHsmCIyc0OwgmRTvggBcqsHRjZ8ZKROl4aRbqhyQb5EzCeL9lwFKwhbYdE+3ngBQsYPRALSVY8Ai+KSOASdsP2wBqA1yQ7boEuuVlBGOArezdVwCnxgcsg+bglAtsOHSizQek8XAz6wTIAEwXi6oFpmC4UXzgUh8trRbV+DGJl4g9LLRCplFTG7llgl/jF0gxw5dj20pKt7/0KJPeJfyy1cVz9/bLcCpbQAKrOdeIfp9p08qcozA42PiTiE99G/0f8L79Trz+R1ZvwAAAAAElFTkSuQmCC
+- name: metrics-provider
+- name: latest-events-service
+- name: console
+- name: service-catalog
+- name: service-exposer
+- name: app-launcher-helper
+  env:
+    API_URL: http://api.{{ cf_domain }}
+    TOKEN_KEY_URL: http://uaa.{{ cf_domain }}/token_key
+- name: user-management
+- name: platform-context
+- name: file-server
+- name: cdh-broker
+  memory: 128M
+  env:
+    CREDENTIALS: '{"hdfs_root": "hdfs://hadoop:8020/user/iauser", "zk_host": "cloudera", "zk_port": "2181", "spark_max_memory": "2163212288", "resource_manager" : "http://hadoop:8088", "yarn_config": "http://hadoop:7180/api/v9/clusters/CDH-cluster/services/YARN/clientConfig", "hdfs_config": "http://hadoop:7180/api/v9/clusters/CDH-cluster/services/HDFS/clientConfig", "hbase_config": "http://hadoop:7180/api/v9/clusters/CDH-cluster/services/HBASE/clientConfig"}'
+- name: zookeeper-wssb-broker
+  memory: 128M
+  env:
+    CREDENTIALS: '{"uri": "hadoop:2181"}'
+- name: smtp-broker
+  memory: 128M
+  env:
+    CREDENTIALS: '{"port_ssl": "465", "username": "postmaster@sandboxa008b1e07a8340f8a5f68d50e2105451.mailgun.org", "password": "c089892249005cc5124bd62575e065a9", "port": "25", "hostname": "smtp.mailgun.com", "senderEmail": "postmaster@sandboxa008b1e07a8340f8a5f68d50e2105451.mailgun.org", "senderName": "Trusted Analytics Platform"}'
+- name: data-catalog
+- name: dataset-publisher
+- name: router-metrics-provider
+- name: das
+- name: hbase-broker
+  env:
+    USER_PASSWORD: admin
+    KRB_KDC_HOST: ""
+    KRB_REALM: ""
+    ZK_BRK_SPACE: /org/intel/hbasebroker/metadata
+    HADOOP_PROVIDED_PARAMS: '{"HADOOP_CONFIG_KEY":{"hadoop.ssl.require.client.cert":"false","dfs.client.read.shortcircuit.skip.checksum":"false","hadoop.proxyuser.mapred.hosts":"*","dfs.replication":"1","hadoop.security.auth_to_local":"DEFAULT","zookeeper.znode.rootserver":"root-region-server","hadoop.security.authorization":"false","hbase.client.retries.number":"35","hadoop.proxyuser.HTTP.hosts":"*","hadoop.proxyuser.httpfs.groups":"*","hbase.zookeeper.quorum":"hadoop","hadoop.proxyuser.httpfs.hosts":"*","hadoop.security.authentication":"simple","hbase.snapshot.master.timeout.millis":"60000","hadoop.proxyuser.hdfs.hosts":"*","hbase.client.write.buffer":"2097152","hadoop.proxyuser.hue.hosts":"*","zookeeper.znode.parent":"/hbase","hadoop.proxyuser.yarn.groups":"*","hbase.rootdir":"hdfs://hadoop:8020/hbase","hbase.snapshot.master.timeoutMillis":"60000","dfs.namenode.acls.enabled":"false","hbase.security.authentication":"simple","hadoop.proxyuser.mapred.groups":"*","hadoop.proxyuser.hue.groups":"*","hadoop.security.group.mapping":"org.apache.hadoop.security.ShellBasedUnixGroupsMapping","io.compression.codecs":"org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.BZip2Codec,org.apache.hadoop.io.compress.DeflateCodec,org.apache.hadoop.io.compress.SnappyCodec,org.apache.hadoop.io.compress.Lz4Codec","hadoop.ssl.keystores.factory.class":"org.apache.hadoop.security.ssl.FileBasedKeyStoresFactory","hadoop.proxyuser.hive.groups":"*","hbase.snapshot.enabled":"true","fs.defaultFS":"hdfs://hadoop:8020","hbase.thrift.support.proxyuser":"false","hadoop.ssl.client.conf":"ssl-client.xml","hadoop.proxyuser.flume.hosts":"*","zookeeper.session.timeout":"60000","dfs.domain.socket.path":"/var/run/hdfs-sockets/dn","hbase.client.pause":"100","dfs.https.port":"50470","hadoop.proxyuser.hdfs.groups":"*","dfs.client.read.shortcircuit":"false","dfs.namenode.name.dir":"file:///dfs/nn","dfs.namenode.http-address":"hadoop:50070","dfs.client.use.datanode.hostname":"false","dfs.datanode.hdfs-blocks-metadata.enabled":"true","hadoop.ssl.server.conf":"ssl-server.xml","hbase.snapshot.region.timeout":"60000","dfs.client.domain.socket.data.traffic":"false","hadoop.proxyuser.hive.hosts":"*","dfs.https.address":"hadoop:50470","dfs.blocksize":"134217728","hadoop.security.instrumentation.requires.admin":"false","hbase.client.keyvalue.maxsize":"10485760","hbase.regionserver.thrift.http":"false","hbase.client.scanner.caching":"100","hadoop.proxyuser.oozie.hosts":"*","hbase.rpc.timeout":"60000","hadoop.rpc.protection":"authentication","fs.permissions.umask-mode":"022","hadoop.proxyuser.oozie.groups":"*","hbase.zookeeper.property.clientPort":"2181","hadoop.proxyuser.yarn.hosts":"*","dfs.namenode.servicerpc-address":"hadoop:8022","hadoop.proxyuser.flume.groups":"*","hadoop.proxyuser.HTTP.groups":"*"}}'
+- name: zookeeper-broker
+  env:
+    USER_PASSWORD: admin
+    KRB_KDC_HOST: ''
+    KRB_REALM: ''
+    ZK_CLUSTER_URL: hadoop:2181
+    ZK_BRK_ROOT: /org/intel/zookeeperbroker/metadata
+    ZK_BRK_STORE: /org/intel/zookeeperbroker/userspace
+- name: yarn-broker
+  env:
+    USER_PASSWORD: admin
+    KRB_KDC_HOST: ''   
+    KRB_REALM: ''
+    HADOOP_PROVIDED_PARAMS: '{"HADOOP_CONFIG_KEY":{"hadoop.proxyuser.mapred.hosts":"*","yarn.application.classpath":"$HADOOP_CLIENT_CONF_DIR,$HADOOP_CONF_DIR,$HADOOP_COMMON_HOME/*,$HADOOP_COMMON_HOME/lib/*,$HADOOP_HDFS_HOME/*,$HADOOP_HDFS_HOME/lib/*,$HADOOP_YARN_HOME/*,$HADOOP_YARN_HOME/lib/*","dfs.replication":"1","yarn.admin.acl":"*","yarn.scheduler.increment-allocation-vcores":"1","hadoop.security.auth_to_local":"DEFAULT","yarn.resourcemanager.webapp.address":"hadoop:8088","mapreduce.shuffle.max.connections":"80","yarn.scheduler.maximum-allocation-vcores":"32","mapreduce.job.reduces":"1","hadoop.proxyuser.HTTP.hosts":"*","hadoop.proxyuser.httpfs.hosts":"*","dfs.namenode.acls.enabled":"false","yarn.scheduler.increment-allocation-mb":"512","mapreduce.map.output.compress.codec":"org.apache.hadoop.io.compress.SnappyCodec","yarn.resourcemanager.nm.liveness-monitor.interval-ms":"1000","hadoop.proxyuser.mapred.groups":"*","hadoop.security.group.mapping":"org.apache.hadoop.security.ShellBasedUnixGroupsMapping","net.topology.script.file.name":"/etc/hadoop/conf.cloudera.YARN/topology.py","hadoop.ssl.keystores.factory.class":"org.apache.hadoop.security.ssl.FileBasedKeyStoresFactory","mapreduce.job.split.metainfo.maxsize":"10000000","mapreduce.reduce.speculative":"false","mapreduce.task.io.sort.mb":"256","yarn.app.mapreduce.am.admin.user.env":"LD_LIBRARY_PATH=$HADOOP_COMMON_HOME/lib/native:$JAVA_LIBRARY_PATH","yarn.resourcemanager.admin.address":"hadoop:8033","yarn.resourcemanager.resource-tracker.address":"hadoop:8031","mapreduce.reduce.cpu.vcores":"1","dfs.domain.socket.path":"/var/run/hdfs-sockets/dn","mapreduce.jobhistory.address":"hadoop:10020","mapreduce.job.ubertask.enable":"false","hadoop.ssl.enabled":"false","hadoop.proxyuser.hdfs.groups":"*","dfs.namenode.name.dir":"file:///dfs/nn","dfs.client.use.datanode.hostname":"false","mapreduce.task.timeout":"600000","mapreduce.am.max-attempts":"2","mapreduce.framework.name":"yarn","yarn.scheduler.minimum-allocation-vcores":"1","dfs.client.domain.socket.data.traffic":"false","yarn.resourcemanager.admin.client.thread-count":"1","hadoop.proxyuser.hive.hosts":"*","mapreduce.reduce.shuffle.parallelcopies":"10","yarn.resourcemanager.scheduler.class":"org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler","dfs.blocksize":"134217728","mapreduce.jobhistory.webapp.https.address":"hadoop:19890","hadoop.security.instrumentation.requires.admin":"false","io.file.buffer.size":"65536","yarn.resourcemanager.container.liveness-monitor.interval-ms":"600000","hadoop.proxyuser.oozie.hosts":"*","hadoop.proxyuser.oozie.groups":"*","yarn.resourcemanager.scheduler.address":"hadoop:8030","hadoop.proxyuser.yarn.hosts":"*","dfs.namenode.servicerpc-address":"hadoop:8022","mapreduce.map.speculative":"false","hadoop.ssl.require.client.cert":"false","yarn.resourcemanager.address":"hadoop:8032","dfs.client.read.shortcircuit.skip.checksum":"false","yarn.resourcemanager.resource-tracker.client.thread-count":"50","mapreduce.job.counters.max":"120","mapreduce.client.submit.file.replication":"10","yarn.scheduler.fair.sizebasedweight":"false","yarn.acl.enable":"true","yarn.app.mapreduce.am.staging-dir":"/user","hadoop.security.authorization":"false","yarn.scheduler.fair.preemption":"false","yarn.nm.liveness-monitor.expiry-interval-ms":"600000","yarn.am.liveness-monitor.expiry-interval-ms":"600000","hadoop.proxyuser.httpfs.groups":"*","yarn.resourcemanager.client.thread-count":"50","hadoop.security.authentication":"simple","mapreduce.output.fileoutputformat.compress":"false","hadoop.proxyuser.hdfs.hosts":"*","zlib.compress.level":"DEFAULT_COMPRESSION","mapreduce.job.reduce.slowstart.completedmaps":"0.8","hadoop.proxyuser.hue.hosts":"*","hadoop.proxyuser.yarn.groups":"*","yarn.resourcemanager.am.max-attempts":"2","yarn.resourcemanager.max-completed-applications":"10000","mapreduce.application.classpath":"$HADOOP_MAPRED_HOME/*,$HADOOP_MAPRED_HOME/lib/*,$MR2_CLASSPATH","mapreduce.reduce.java.opts":"-Djava.net.preferIPv4Stack=true -Xmx825955249","mapreduce.map.output.compress":"true","hadoop.proxyuser.hue.groups":"*","io.compression.codecs":"org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.BZip2Codec,org.apache.hadoop.io.compress.DeflateCodec,org.apache.hadoop.io.compress.SnappyCodec,org.apache.hadoop.io.compress.Lz4Codec","hadoop.proxyuser.hive.groups":"*","yarn.app.mapreduce.am.resource.cpu-vcores":"1","mapreduce.output.fileoutputformat.compress.type":"BLOCK","fs.defaultFS":"hdfs://hadoop:8020","hadoop.ssl.client.conf":"ssl-client.xml","yarn.resourcemanager.scheduler.client.thread-count":"50","hadoop.proxyuser.flume.hosts":"*","mapreduce.map.sort.spill.percent":"0.8","dfs.https.port":"50470","mapreduce.map.memory.mb":"1024","dfs.client.read.shortcircuit":"false","dfs.namenode.http-address":"hadoop:50070","dfs.datanode.hdfs-blocks-metadata.enabled":"true","mapreduce.admin.user.env":"LD_LIBRARY_PATH=$HADOOP_COMMON_HOME/lib/native:$JAVA_LIBRARY_PATH","yarn.scheduler.fair.user-as-default-queue":"true","hadoop.ssl.server.conf":"ssl-server.xml","mapreduce.reduce.memory.mb":"1024","mapreduce.map.cpu.vcores":"1","yarn.scheduler.minimum-allocation-mb":"1024","mapreduce.jobhistory.admin.address":"hadoop:10033","dfs.https.address":"hadoop:50470","yarn.resourcemanager.amliveliness-monitor.interval-ms":"1000","mapreduce.output.fileoutputformat.compress.codec":"org.apache.hadoop.io.compress.DefaultCodec","yarn.scheduler.fair.assignmultiple":"false","mapreduce.jobhistory.webapp.address":"hadoop:19888","yarn.scheduler.maximum-allocation-mb":"65536","mapreduce.task.io.sort.factor":"64","yarn.resourcemanager.webapp.https.address":"hadoop:8090","hadoop.rpc.protection":"authentication","fs.permissions.umask-mode":"022","yarn.app.mapreduce.am.command-opts":"-Djava.net.preferIPv4Stack=true -Xmx825955249","mapreduce.map.java.opts":"-Djava.net.preferIPv4Stack=true -Xmx825955249","hadoop.proxyuser.flume.groups":"*","yarn.app.mapreduce.am.resource.mb":"1024","hadoop.proxyuser.HTTP.groups":"*"}}'
+    YARNBRK_SPACE: /org/intel/yarnbroker/metadata
+- name: hdfs-downloader
+  env:
+    HDFS_USER: cf
+    KERBEROS_USER: ""
+    KERBEROS_PASS: ""
+- name: hdfs-uploader
+  env:
+    HDFS_USER: cf
+    KERBEROS_USER: ""
+    KERBEROS_PASS: ""
+- name: metadataparser
+  env:
+    HDFS_USER: cf
+    KERBEROS_USER: ""
+    KERBEROS_PASS: ""
+user_provided_service_instances:
+- name: sso
+  credentials:
+    apiEndpoint: http://api.{{ cf_domain }}
+    authorizationUri: http://login.{{ cf_domain }}/oauth/authorize
+    checkTokenUri: http://uaa.{{ cf_domain }}/check_token
+    clientId: developer_console
+    clientSecret: console-secret
+    logoutUri: http://login.{{ cf_domain }}/logout.do
+    tokenKey: http://uaa.{{ cf_domain }}/token_key
+    tokenUri: http://uaa.{{ cf_domain }}/oauth/token
+    uaaUri: http://uaa.{{ cf_domain }}
+    userInfoUri: http://uaa.{{ cf_domain }}/userinfo
+    email: support@demotrustedanalytics.com
+- name: nats-provider
+  credentials:
+    url: nats://nats:nats@10.244.0.6:4222
+    service-creation-subject: admin
+    data-catalog-subject: platform.data-catalog
+- name: gorouter-provider
+  credentials:
+    username: router
+    password: router
+- name: service-exposer
+  credentials:
+    host: http://service-exposer.{{ cf_domain }}
+- name: datacatalog
+  credentials:
+    host: http://data-catalog.{{ cf_domain }}
+- name: servicecatalog
+  credentials:
+    host: http://service-catalog.{{ cf_domain }}
+- name: dataaquisitionservice
+  credentials:
+    host: http://das.{{ cf_domain }}
+- name: metrics-provider
+  credentials:
+    host: http://metrics-provider.{{ cf_domain }}
+- name: app-launcher-helper
+  credentials:
+    host: http://app-launcher-helper.{{ cf_domain }}
+- name: user-management
+  credentials:
+    host: http://user-management.{{ cf_domain }}
+- name: hue
+  credentials:
+    hueUrl: http://hue.{{ cf_domain }}/metastore/table
+- name: arcadia
+  credentials:
+    arcadiaUrl: http://arcadia.{{ cf_domain }}/arc/apps/data
+- name: datacatalogexport
+  credentials:
+    host: http://hive.{{ cf_domain }}
+- name: hive
+  credentials:
+    hiveUrl: jdbc:hive2://hadoop:10000/
+    hiveUser: hdfs
+- name: platformcontext
+  credentials:
+    host: http://platform-context.{{ cf_domain }}
+- name: fileserver
+  credentials:
+    host: http://file-server.{{ cf_domain }}
+- name: router-metrics-provider
+  credentials:
+    host: http://router-metrics-provider.{{ cf_domain }}
+- name: metadataparser
+  credentials:
+    url: http://metadata.{{ cf_domain }}
+- name: downloader
+  credentials:
+    url: http://hdfs-downloader.{{ cf_domain }}
+- name: uploader
+  credentials:
+    url: http://hdfs-uploader.{{ cf_domain }}
+- name: latest-events-service
+  credentials:
+    host: http://latest-events-service.{{ cf_domain }}
+- name: kerberos-service
+  credentials:
+    kdc: hadoop
+    kpassword: "cf1"
+    krealm: ""
+    kuser: "cf"
+- name: external-tools
+  credentials:
+    hue:
+      available: "false"
+      url: placeholder
+    arcadia:
+      available: "false"
+      url: placeholder
+service_brokers:
+- name: atk
+  broker_url: http://atk-broker.{{ cf_domain }}
+  auth_username: admin
+  auth_password: admin
+- name: se
+  broker_url: http://se-broker.{{ cf_domain }}
+  auth_username: admin
+  auth_password: admin
+- name: docker
+  broker_url: http://cf-containers-broker.{{ cf_domain }}
+  auth_username: containers
+  auth_password: containers
+- name: gateway
+  broker_url: http://gateway-broker.{{ cf_domain }}
+  auth_username: admin
+  auth_password: admin
+- name: hdfs
+  broker_url: https://hdfs-broker.{{ cf_domain }}
+  auth_username: user
+  auth_password: c1oudc0w
+- name: zookeeper-wssb
+  broker_url: http://zookeeper-wssb-broker.{{ cf_domain }}
+  auth_username: admin
+  auth_password: admin
+- name: kafka
+  broker_url: http://kafka-broker.{{ cf_domain }}
+  auth_username: admin
+  auth_password: admin
+- name: cdh
+  broker_url: http://cdh-broker.{{ cf_domain }}
+  auth_username: admin
+  auth_password: admin
+- name: smtp
+  broker_url: http://smtp-broker.{{ cf_domain }}
+  auth_username: admin
+  auth_password: admin
+- name: hbase
+  broker_url: http://hbase-broker.{{ cf_domain }}
+  auth_username: user
+  auth_password: admin
+- name: zookeeper
+  broker_url: http://zookeeper-broker.{{ cf_domain }}
+  auth_username: user
+  auth_password: admin
+- name: yarn
+  broker_url: http://yarn-broker.{{ cf_domain }}
+  auth_username: user
+  auth_password: admin
