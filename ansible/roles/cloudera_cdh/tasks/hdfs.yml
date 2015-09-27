@@ -1,0 +1,61 @@
+# Copyright (c) 2015 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+
+- cdh: action=deploy_service_worker_nodes service=hdfs host={{ item }}
+  with_items: hdfs_dn_hosts
+
+- cdh: action=set_config entity=service service=hdfs name={{ item.name }}
+       value={{ item.value }}
+  with_items:
+    - { name: dfs_replication, value: 1 }
+    - { name: dfs_permissions, value: 'true' }
+    - { name: dfs_block_local_path_access_user, value: impala,hbase,mapred,spark }
+    - { name: hue_kerberos_principal_shortname, value: hue }
+
+- cdh: action=set_config entity=role service=hdfs role=namenode
+       name={{ item.name }} value={{ item.value }}
+  with_items:
+    - { name: dfs_name_dir_list, value: /dfs/nn }
+    - { name: dfs_namenode_handler_count, value: 30 }
+
+- cdh: action=set_config entity=role service=hdfs role=secondarynamenode
+       name={{ item.name }} value={{ item.value }}
+  with_items:
+    - { name: fs_checkpoint_dir_list, value: /dfs/snn }
+
+- cdh: action=set_config entity=role service=hdfs role=datanode
+       name={{ item.name }} value={{ item.value }}
+  with_items:
+    - { name: dfs_data_dir_list, value: /dfs/dn }
+    - { name: dfs_datanode_handler_count, value: 30 }
+    - { name: dfs_datanode_du_reserved, value: 1073741821 }
+    - { name: dfs_datanode_failed_volumes_tolerated, value: 0 }
+
+- cdh: action=set_config entity=role service=hdfs role=datanode
+       name={{ item.name }} value={{ item.value }}
+  with_items:
+    - { name: dfs_datanode_data_dir_perm, value: 755 }
+
+- cdh: action=deploy_hdfs_base nn_host={{ hdfs_nn_hosts[0] }}
+       sn_host={{ hdfs_snn_hosts[0] }} 
+
+- cdh: action=service service=hdfs state=started
+
+- cdh: action=deploy_hdfs_httpfs host={{ hdfs_httpfs_hosts[0] }}
+  notify: 
+    - restart hdfs
+
+# vi:et:sw=2 ts=2 sts=2 ft=ansible
