@@ -34,7 +34,7 @@
        user=containers password=containers force_basic_auth=yes
   register: cf_containers_broker_v2_catalog_result
   until: cf_containers_broker_v2_catalog_result.status == 200
-  retries: 5
+  retries: 15
   delay: 60
 
 # vi:et:sw=2 ts=2 sts=2 ft=ansible
