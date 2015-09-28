@@ -231,7 +231,6 @@ resources:
 
   cloudfoundry_server:
     type: "OS::Nova::Server"
-    depends_on: cloudera_wait_condition
     properties:
       key_name: { get_resource: ssh_key }
       flavor: { get_param: cloudfoundry_flavor }
