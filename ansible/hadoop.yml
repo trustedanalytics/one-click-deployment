@@ -14,6 +14,13 @@
 
 ---
 
+- hosts: hadoop
+  tasks:
+    - lineinfile: dest=/etc/hosts state=absent regexp="^{{ item }}"
+      with_items:
+        - "{{ ansible_eth1['ipv4']['address'] }}"
+        - "{{ ansible_eth0['ipv6'][0]['address'] }}"
+
 - include: consul.yml
 
 - include: cloudera.yml
