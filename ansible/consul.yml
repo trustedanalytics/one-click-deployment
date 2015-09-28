@@ -36,6 +36,9 @@
 # https://github.com/docker/docker/issues/10863
 # https://github.com/docker/docker/issues/12347
 - hosts: all:!consul
+  pre_tasks:
+    - wait_for: host={{ hostvars[groups['consul'][0]]['ansible_ssh_host'] }}
+                port=53
   roles:
     - role: resolv_conf
       nameservers: "{{ [hostvars[groups['consul'][0]]['ansible_ssh_host']] | union(ansible_local['nameservers']) }}"
