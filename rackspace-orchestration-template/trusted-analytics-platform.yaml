@@ -60,6 +60,7 @@ parameters:
     label: Server Size
     type: string
     default: 30 GB I/O v1
+    description: Server size for the Hadoop server
     constraints:
       - allowed_values:
         - 30 GB Compute v1
