@@ -188,7 +188,7 @@ resources:
                   unzip one-click-deployment-master.zip
 
                   cd one-click-deployment-master/ansible/
-                  ansible-playbook --limit $HOSTNAME ${HOSTNAME}.yml
+                  ansible-playbook --limit $HOSTNAME --sudo ${HOSTNAME}.yml
 
                   wc_notify --data-binary '{"status": "SUCCESS"}'
             runcmd:
@@ -283,7 +283,7 @@ resources:
                   unzip one-click-deployment-master.zip
 
                   cd one-click-deployment-master/ansible/
-                  ansible-playbook --extra-vars "cf_admin_password=%password%" --limit $HOSTNAME ${HOSTNAME}.yml
+                  ansible-playbook --extra-vars "cf_admin_password=%password%" --limit $HOSTNAME --sudo ${HOSTNAME}.yml
 
                   wc_notify --data-binary '{"status": "SUCCESS"}'
             runcmd:
