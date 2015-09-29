@@ -1,0 +1,3 @@
+[submodule "rackspace-orchestration-template"]
+	path = rackspace-orchestration-template
+	url = https://github.com/trustedanalytics/rackspace-orchestration-template.git

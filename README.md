@@ -6,7 +6,7 @@
 
   To create a Trusted Analytics Platform template in the Create Resources menu, select **Custom Template...**.
 
-2. Download [the Trusted Analytics Platform template](/rackspace-orchestration-template/trusted-analytics-platform.yaml?raw=true) and upload it into the editor.
+2. Download [the Trusted Analytics Platform template](https://github.com/trustedanalytics/rackspace-orchestration-template/blob/master/trusted-analytics-platform.yaml?raw=true) and upload it into the editor.
   
   ![Rackspace Orchestration Create Custom Template](/images/rackspace-orchestration-create_custom_template.png?raw=true)
 
