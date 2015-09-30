@@ -15,9 +15,6 @@
 ---
 
 - hosts: localhost
-  pre_tasks:
-    - gem: name=net-ssh state=present version=2.9.2
-           user_install={{ "no" if ansible_user_id == "root" else "yes" }}
   roles:
     - { role: bosh_cli, version: 1.3087.0 }
     - uaa_intel_boshrelease
