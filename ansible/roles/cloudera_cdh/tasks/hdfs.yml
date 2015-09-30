@@ -47,7 +47,7 @@
 - cdh: action=set_config entity=role service=hdfs role=datanode
        name={{ item.name }} value={{ item.value }}
   with_items:
-    - { name: dfs_datanode_data_dir_perm, value: 755 }
+    - { name: dfs_datanode_data_dir_perm, value: 777 }
 
 - cdh: action=deploy_hdfs_base nn_host={{ hdfs_nn_hosts[0] }}
        sn_host={{ hdfs_snn_hosts[0] }} 

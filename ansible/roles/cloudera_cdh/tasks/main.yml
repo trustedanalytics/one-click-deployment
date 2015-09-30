@@ -50,7 +50,7 @@
 
 - hdfs: dir={{ item.dir }} mode={{ item.mode }}
   with_items:
-    - { dir: /user, mode: 755 }
+    - { dir: /user, mode: 777 }
 
 - znode: dir=/org/intel/{{ item }}/metadata
   with_items:
