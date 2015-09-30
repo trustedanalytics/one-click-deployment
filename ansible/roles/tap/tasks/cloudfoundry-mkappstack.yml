@@ -19,8 +19,6 @@
 - git: repo=https://github.com/trustedanalytics/cloudfoundry-mkappstack.git
        dest={{ bosh_workspace}}/cloudfoundry-mkappstack
 
-- include: ruby2.0.yml
-
 - template: src={{ item }}.j2
             dest={{ bosh_workspace }}/cloudfoundry-mkappstack/{{ item }}
   with_items:
