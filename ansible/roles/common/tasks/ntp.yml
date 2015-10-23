@@ -14,24 +14,16 @@
 
 ---
 
-- hosts: hadoop
-  tasks:
-    - lineinfile: dest=/etc/hosts state=absent regexp="^{{ item }}"
-      with_items:
-        - "{{ ansible_eth1['ipv4']['address'] }}"
-        - "{{ ansible_eth0['ipv6'][0]['address'] }}"
+- apt: name=ntp state=present
+  when: ansible_os_family == "Debian"
 
-- include: consul.yml
+- yum: name=ntp state=present
+  when: ansible_os_family == "RedHat"
 
-- include: cloudera.yml
+- service: name=ntp state=started enabled=yes
+  when: ansible_os_family == "Debian"
 
-- hosts: hadoop
-  tasks:
-    - uri:
-        url: "{{ hadoop_wait_condition_handle }}"
-        method: PUT
-        body: '{"Status" : "SUCCESS","Reason" : "Configuration Complete","UniqueId" : "ID1234","Data" : "Application has completed configuration."}'
-        HEADER_Content-Type: ""
-      when: hadoop_wait_condition_handle
+- service: name=ntpd state=started enabled=yes
+  when: ansible_os_family == "RedHat"
 
 # vi:et:sw=2 ts=2 sts=2 ft=ansible

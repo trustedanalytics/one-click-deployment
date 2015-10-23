@@ -20,4 +20,13 @@
 
 - include: tap.yml
 
+- hosts: applications
+  tasks:
+    - uri:
+        url: "{{ applications_wait_condition_handle }}"
+        method: PUT
+        body: '{"Status" : "SUCCESS","Reason" : "Configuration Complete","UniqueId" : "ID1234","Data" : "Application has completed configuration."}'
+        HEADER_Content-Type: ""
+      when: applications_wait_condition_handle
+
 # vi:et:sw=2 ts=2 sts=2 ft=ansible

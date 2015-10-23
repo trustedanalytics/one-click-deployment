@@ -15,6 +15,34 @@
 ---
 
 - hosts: bosh-lite
+  vars:
+    grub_cmdline_linux: cgroup_enable=memory swapaccount=1 max_loop=255
+  handlers:
+    - name: update-grub
+      shell: update-grub
+      become: yes
+    # https://support.ansible.com/hc/en-us/articles/201958037-Reboot-a-server-and-wait-for-it-to-come-back
+    - name: restart machine
+      command: shutdown -r now "Ansible updates triggered"
+      async: 0
+      poll: 0
+      ignore_errors: true
+      become: yes
+  pre_tasks:
+    - lineinfile: dest=/etc/cloud/cloud.cfg regexp="^ - (scripts-user)$"
+                  line=" - [ \1, always ]" backrefs=yes
+      become: yes
+  tasks:
+    - lineinfile: dest=/etc/default/grub regexp="^GRUB_CMDLINE_LINUX=\"\"$"
+                  line="GRUB_CMDLINE_LINUX=\"{{ grub_cmdline_linux }}\""
+                  backrefs=yes
+      notify:
+        - update-grub
+        - restart machine
+      become: yes
+    - meta: flush_handlers
+
+- hosts: bosh-lite
   roles:
     - common
     - bosh_provisioner

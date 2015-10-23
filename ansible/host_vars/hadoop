@@ -14,24 +14,6 @@
 
 ---
 
-- hosts: hadoop
-  tasks:
-    - lineinfile: dest=/etc/hosts state=absent regexp="^{{ item }}"
-      with_items:
-        - "{{ ansible_eth1['ipv4']['address'] }}"
-        - "{{ ansible_eth0['ipv6'][0]['address'] }}"
-
-- include: consul.yml
-
-- include: cloudera.yml
-
-- hosts: hadoop
-  tasks:
-    - uri:
-        url: "{{ hadoop_wait_condition_handle }}"
-        method: PUT
-        body: '{"Status" : "SUCCESS","Reason" : "Configuration Complete","UniqueId" : "ID1234","Data" : "Application has completed configuration."}'
-        HEADER_Content-Type: ""
-      when: hadoop_wait_condition_handle
+hadoop_wait_condition_handle: null
 
 # vi:et:sw=2 ts=2 sts=2 ft=ansible
