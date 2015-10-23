@@ -26,39 +26,39 @@ consul_basic_config:
   retry_join: "{{ groups['consul'] }}"
 
 cloudera_cluster_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_cms_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_zookeeper_server_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_hdfs_nn_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_hdfs_snn_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_hdfs_httpfs_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_hdfs_dn_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_hbase_master_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_hbase_rs_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_yarn_nm_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_yarn_rm_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_spark_history_server_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_hive_metastore_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_hive_gateway_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_oozie_server_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_hue_server_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 cloudera_kafka_broker_hosts:
-  - "{{ inventory_hostname_short }}"
+  - "{{ inventory_hostname }}"
 
 bosh_director_url: 127.0.0.1
 bosh_workspace: /root/workspace
