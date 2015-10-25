@@ -28,6 +28,7 @@ cf_login_smtp_senderName: null
 cf_org: seedorg
 cf_space: seedspace
 
+cloudfoundry_mkappstack_version: 0.4.0
 cloudfoundry_mkappstack_stackpfx: mystack_
 cloudfoundry_mkappstack_artifact_pfx: https://my.artifact.store.org/common/path/to/artifacts
 

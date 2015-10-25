@@ -18,6 +18,7 @@
 
 - git: repo=https://github.com/trustedanalytics/cloudfoundry-mkappstack.git
        dest={{ bosh_workspace}}/cloudfoundry-mkappstack
+       version=v{{ cloudfoundry_mkappstack_version }}
 
 - template: src={{ item }}.j2
             dest={{ bosh_workspace }}/cloudfoundry-mkappstack/{{ item }}
