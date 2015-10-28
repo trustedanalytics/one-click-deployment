@@ -24,7 +24,6 @@
     - libxslt1-dev
     - libpq-dev
     - libmysqlclient-dev
-  when: ansible_distribution == "Ubuntu"
   become: yes
 
 - file: src={{ item }}2.0 dest={{ item }} state=link force=yes
@@ -37,22 +36,6 @@
     - /usr/bin/ri
     - /usr/bin/ruby
     - /usr/bin/testrb
-  when: ansible_distribution == "Ubuntu"
-  become: yes
-
-- yum: name={{ item }} state=present
-  with_items:
-    - gcc
-    - ruby
-    - ruby-devel
-    - mysql-devel
-    - postgresql-devel
-    - postgresql-libs
-    - sqlite-devel
-    - libxslt-devel
-    - libxml2-devel
-    - yajl-ruby
-  when: ansible_distribution == "CentOS"
   become: yes
 
 - gem: name=bosh_cli state=present version={{ version }}
