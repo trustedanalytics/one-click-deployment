@@ -15,23 +15,6 @@
 ---
 
 - hosts: localhost
-  pre_tasks:
-    - apt: name={{ item }} state=present
-      with_items:
-        - ruby2.0
-        - ruby2.0-dev
-      become: yes
-    - file: src={{ item }}2.0 dest={{ item }} state=link force=yes
-      with_items:
-        - /usr/bin/erb
-        - /usr/bin/gem
-        - /usr/bin/irb
-        - /usr/bin/rake
-        - /usr/bin/rdoc
-        - /usr/bin/ri
-        - /usr/bin/ruby
-        - /usr/bin/testrb
-      become: yes
   roles:
     - { role: bosh_cli, version: 1.3087.0 }
     - uaa_intel_boshrelease
