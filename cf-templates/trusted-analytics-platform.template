@@ -1,0 +1,393 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description" : "Trusted Analytics Platform (TAP) is open source software, optimized for performance and security, that accelerates the creation of Cloud-native applications driven by Big Data Analytics. TAP makes it easier for developers and data scientists, at enterprises, CSPs and SIs, to collaborate by providing a shared, flexible environment for advanced analytics in public and private Clouds. Data scientists get extensible tools, scalable algorithms and powerful engines to train and deploy predictive models. Developers get consistent APIs, services and runtimes to quickly integrate these models into applications. System Operators get an integrated stack that they can easily provision in a Cloud infrastructure.",
+    "Parameters" : {
+        "KeyName" : {
+            "Type" : "AWS::EC2::KeyPair::KeyName"
+        },
+        "HadoopVolumeSize" : {
+            "Type" : "Number",
+            "Default" : "250",
+            "MinValue" : "250"
+        },
+        "HadoopInstanceType" : {
+            "Type" : "String",
+            "AllowedValues" : [
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge",
+                "r3.xlarge",
+                "r3.2xlarge",
+                "r3.4xlarge",
+                "r3.8xlarge"
+            ],
+            "Default" : "c4.4xlarge"
+        },
+        "ApplicationsVolumeSize" : {
+            "Type" : "Number",
+            "Default" : "250",
+            "MinValue" : "250"
+        },
+        "ApplicationsInstanceType" : {
+            "Type" : "String",
+            "AllowedValues" : [
+                "m4.4xlarge",
+                "m4.10xlarge",
+                "c4.8xlarge",
+                "r3.2xlarge",
+                "r3.4xlarge",
+                "r3.8xlarge"
+            ],
+            "Default" : "r3.2xlarge"
+        },
+        "Password" : {
+            "Type" : "String",
+            "AllowedPattern" : "[a-zA-Z0-9]*",
+            "MinLength" : "0",
+            "NoEcho" : "true"
+        }
+    },
+    "Mappings" : {
+        "RegionMap" : {
+            "us-east-1" : {
+                "RHELAMI" : "ami-0d28fe66",
+                "UbuntuAMI" : "ami-eb02508e"
+            },
+            "us-west-1" : {
+                "RHELAMI" : "ami-5b8a781f",
+                "UbuntuAMI" : "ami-1d8a4959"
+            },
+            "us-west-2" : {
+                "RHELAMI" : "ami-5b8a781f",
+                "UbuntuAMI" : "ami-198a495d"
+            },
+            "eu-west-1" : {
+                "RHELAMI" : "ami-78d29c0f",
+                "UbuntuAMI" : "ami-47360a30"
+            }
+        }
+    },
+    "Resources" : {
+        "TAPVPC" : {
+            "Type" : "AWS::EC2::VPC",
+            "Properties" : {
+                "CidrBlock" : "10.0.0.0/16",
+                "EnableDnsHostnames" : "true",
+                "Tags" : [
+                    {
+                        "Key" : "Name",
+                        "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "vpc" ] ] }
+                    }
+                ]
+            }
+        },
+        "InternetGateway" : {
+            "Type" : "AWS::EC2::InternetGateway"
+        },
+        "AttachGateway" : {
+            "Type" : "AWS::EC2::VPCGatewayAttachment",
+            "Properties" : {
+                "InternetGatewayId" : { "Ref" : "InternetGateway" },
+                "VpcId" : { "Ref" : "TAPVPC" }
+            }
+        },
+        "PublicSubnet" : {
+            "Type" : "AWS::EC2::Subnet",
+            "Properties" : {
+                "CidrBlock" : "10.0.0.0/24",
+                "MapPublicIpOnLaunch" : "true",
+                "Tags" : [
+                    {
+                        "Key" : "Name",
+                        "Value" : "Public subnet"
+                    }
+                ],
+                "VpcId" : { "Ref" : "TAPVPC" }
+            }
+        },
+        "PublicRouteTable" : {
+            "Type" : "AWS::EC2::RouteTable",
+            "Properties" : {
+                "VpcId" : { "Ref" : "TAPVPC" }
+            }
+        },
+        "PublicRoute" : {
+            "Type" : "AWS::EC2::Route",
+            "DependsOn" : "InternetGateway",
+            "Properties" : {
+                "DestinationCidrBlock" : "0.0.0.0/0",
+                "GatewayId" : { "Ref" : "InternetGateway" },
+                "RouteTableId" : { "Ref" : "PublicRouteTable" }
+            }
+        },
+        "PublicSubnetRouteTableAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+                "SubnetId" : { "Ref" : "PublicSubnet" },
+                "RouteTableId" : { "Ref" : "PublicRouteTable" }
+            }
+        },
+        "HadoopInstanceSecurityGroup" : {
+            "Type" : "AWS::EC2::SecurityGroup",
+            "Properties" : {
+                "GroupDescription" : "hadoop security group",
+                "SecurityGroupEgress" : [
+                    {
+                        "CidrIp" : "0.0.0.0/0",
+                        "FromPort" : "0",
+                        "IpProtocol" : "-1",
+                        "ToPort" : "65535"
+                    }
+                ],
+                "SecurityGroupIngress" : [
+                    {
+                        "CidrIp" : "0.0.0.0/0",
+                        "FromPort" : "22",
+                        "IpProtocol" : "tcp",
+                        "ToPort" : "22"
+                    }
+                ],
+                "VpcId" : { "Ref" : "TAPVPC" }
+            }
+        },
+        "HadoopInstance" : {
+            "Type" : "AWS::EC2::Instance",
+            "DependsOn" : "InternetGateway",
+            "Properties" : {
+                "BlockDeviceMappings" : [
+                    {
+                        "DeviceName" : "/dev/sda1",
+                        "Ebs" : {
+                            "Iops" : "7500",
+                            "VolumeSize" : { "Ref" : "HadoopVolumeSize" },
+                            "VolumeType" : "io1"
+                        }
+                    }
+                ],
+                "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "RHELAMI" ] },
+                "InstanceType" : { "Ref" : "HadoopInstanceType" },
+                "KeyName" : { "Ref" : "KeyName" },
+                "SecurityGroupIds" : [
+                    { "Ref" : "HadoopInstanceSecurityGroup" }
+                ],
+                "SubnetId" : { "Ref" : "PublicSubnet" },
+                "Tags" : [
+                    {
+                        "Key" : "Name",
+                        "Value" : "Hadoop"
+                    }
+                ],
+                "UserData" : { "Fn::Base64" : { "Fn::Join" : [ "", [
+                    "#cloud-config\n",
+                    "bootcmd:\n",
+                    "  - yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm\n",
+                    "  - yum-config-manager --enable rhui-REGION-rhel-server-releases-optional\n",
+                    "package_update: true\n",
+                    "package_upgrade: true\n",
+                    "packages:\n",
+                    "  - unzip\n",
+                    "  - ansible\n",
+                    "write_files:\n",
+                    "  - path: /etc/ansible/hosts\n",
+                    "    content: |\n",
+                    "      [consul]\n",
+                    "      hadoop ansible_connection=local\n",
+                    "\n",
+                    "      [cloudera-manager]\n",
+                    "      hadoop ansible_connection=local\n",
+                    "\n",
+                    "      [cloudera-master]\n",
+                    "      hadoop ansible_connection=local\n",
+                    "\n",
+                    "      [cloudera-worker]\n",
+                    "      hadoop ansible_connection=local\n",
+                    "  - path: /etc/sudoers.d/root\n",
+                    "    permissions: '0440'\n",
+                    "    content: |\n",
+                    "      Defaults:root !requiretty\n",
+                    "runcmd:\n",
+                    "  - wget -O one-click-deployment-master.zip http://trustedanalytics.s3-website-us-east-1.amazonaws.com/one-click-deployment/one-click-deployment-master.zip\n",
+                    "  - unzip -n one-click-deployment-master.zip\n",
+                    "  - cd one-click-deployment-master/ansible/\n",
+                    "  - ansible-playbook --extra-vars \"hadoop_wait_condition_handle=", { "Ref" : "HadoopWaitHandle" }, "\" --limit hadoop --sudo hadoop.yml\n"
+                ] ] } }
+            }
+        },
+        "HadoopWaitHandle" : {
+            "Type" : "AWS::CloudFormation::WaitConditionHandle",
+            "Properties" : {
+            }
+        },
+        "HadoopWaitCondition" : {
+            "Type" : "AWS::CloudFormation::WaitCondition",
+            "DependsOn" : "HadoopInstance",
+            "Properties" : {
+                "Handle" : { "Ref" : "HadoopWaitHandle" },
+                "Timeout" : "7200"
+            }
+        },
+        "ApplicationsInstanceSecurityGroup" : {
+            "Type" : "AWS::EC2::SecurityGroup",
+            "Properties" : {
+                "GroupDescription" : "applications security group",
+                "SecurityGroupEgress" : [
+                    {
+                        "CidrIp" : "0.0.0.0/0",
+                        "FromPort" : "0",
+                        "IpProtocol" : "-1",
+                        "ToPort" : "65535"
+                    }
+                ],
+                "SecurityGroupIngress" : [
+                    {
+                        "CidrIp" : "0.0.0.0/0",
+                        "FromPort" : "22",
+                        "IpProtocol" : "tcp",
+                        "ToPort" : "22"
+                    },
+                    {
+                        "CidrIp" : "0.0.0.0/0",
+                        "FromPort" : "80",
+                        "IpProtocol" : "tcp",
+                        "ToPort" : "80"
+                    },
+                    {
+                        "CidrIp" : "0.0.0.0/0",
+                        "FromPort" : "443",
+                        "IpProtocol" : "tcp",
+                        "ToPort" : "443"
+                    },
+                    {
+                        "CidrIp" : "0.0.0.0/0",
+                        "FromPort" : "4443",
+                        "IpProtocol" : "tcp",
+                        "ToPort" : "4443"
+                    },
+                    {
+                        "FromPort" : "0",
+                        "IpProtocol" : "-1",
+                        "SourceSecurityGroupId" : { "Ref" : "HadoopInstanceSecurityGroup" },
+                        "ToPort" : "65535"
+                    }
+                ],
+                "VpcId" : { "Ref" : "TAPVPC" }
+            }
+        },
+        "HadoopInstanceSecurityGroupIngress" : {
+            "Type" : "AWS::EC2::SecurityGroupIngress",
+            "Properties" : {
+                "FromPort" : "0",
+                "GroupId" : { "Ref" : "HadoopInstanceSecurityGroup" },
+                "IpProtocol" : "-1",
+                "SourceSecurityGroupId" : { "Ref" : "ApplicationsInstanceSecurityGroup" },
+                "ToPort" : "65535"
+            }
+        },
+        "ApplicationsEIP" : {
+             "Type" : "AWS::EC2::EIP",
+            "DependsOn" : "InternetGateway",
+             "Properties" : {
+                 "Domain" : "vpc"
+             }
+        },
+        "ApplicationsInstance" : {
+            "Type" : "AWS::EC2::Instance",
+            "DependsOn" : "InternetGateway",
+            "Properties" : {
+                "BlockDeviceMappings" : [
+                    {
+                        "DeviceName" : "/dev/sda1",
+                        "Ebs" : {
+                            "Iops" : "7500",
+                            "VolumeSize" : { "Ref" : "ApplicationsVolumeSize" },
+                            "VolumeType" : "io1"
+                        }
+                    }
+                ],
+                "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "UbuntuAMI" ] },
+                "InstanceType" : { "Ref" : "ApplicationsInstanceType" },
+                "KeyName" : { "Ref" : "KeyName" },
+                "SecurityGroupIds" : [
+                    { "Ref" : "ApplicationsInstanceSecurityGroup" }
+                ],
+                "SubnetId" : { "Ref" : "PublicSubnet" },
+                "Tags" : [
+                    {
+                        "Key" : "Name",
+                        "Value" : "Applications"
+                    }
+                ],
+                "UserData" : { "Fn::Base64" : { "Fn::Join" : [ "", [
+                    "#cloud-config\n",
+                    "apt_sources:\n",
+                    "  - source: \"ppa:ansible/ansible\"\n",
+                    "hostname: applications\n",
+                    "package_update: true\n",
+                    "package_upgrade: true\n",
+                    "packages:\n",
+                    "  - unzip\n",
+                    "  - ansible\n",
+                    "write_files:\n",
+                    "  - path: /etc/ansible/hosts\n",
+                    "    content: |\n",
+                    "      [consul]\n",
+                    "      hadoop ansible_ssh_host=", { "Fn::GetAtt" : [ "HadoopInstance", "PrivateIp" ] }, "\n",
+                    "\n",
+                    "      [cloudera-manager]\n",
+                    "      hadoop ansible_ssh_host=", { "Fn::GetAtt" : [ "HadoopInstance", "PrivateIp" ] }, "\n",
+                    "\n",
+                    "      [cloudera-master]\n",
+                    "      hadoop ansible_ssh_host=", { "Fn::GetAtt" : [ "HadoopInstance", "PrivateIp" ] }, "\n",
+                    "\n",
+                    "      [cloudera-worker]\n",
+                    "      hadoop ansible_ssh_host=", { "Fn::GetAtt" : [ "HadoopInstance", "PrivateIp" ] }, "\n",
+                    "\n",
+                    "      [bosh-lite]\n",
+                    "      applications ansible_connection=local\n",
+                    "  - path: /etc/sudoers.d/root\n",
+                    "    permissions: '0440'\n",
+                    "    content: |\n",
+                    "      Defaults:root !requiretty\n",
+                    "runcmd:\n",
+                    "  - wget -O one-click-deployment-master.zip http://trustedanalytics.s3-website-us-east-1.amazonaws.com/one-click-deployment/one-click-deployment-master.zip\n",
+                    "  - unzip -n one-click-deployment-master.zip\n",
+                    "  - cd one-click-deployment-master/ansible/\n",
+                    "  - ansible-playbook --extra-vars \"cf_admin_password=", { "Ref" : "Password" }, " cf_domain=", { "Ref" : "ApplicationsEIP" },  ".xip.io cloudfoundry_mkappstack_artifact_pfx=http://trustedanalytics.s3-website-us-east-1.amazonaws.com/one-click-deployment cloudfoundry_mkappstack_stackpfx=aws applications_wait_condition_handle=", { "Ref" : "ApplicationsWaitHandle" }, "\" --limit applications --sudo applications.yml\n"
+                ] ] } }
+            }
+        },
+        "ApplicationsWaitHandle" : {
+            "Type" : "AWS::CloudFormation::WaitConditionHandle",
+            "Properties" : {
+            }
+        },
+        "ApplicationsWaitCondition" : {
+            "Type" : "AWS::CloudFormation::WaitCondition",
+            "DependsOn" : "ApplicationsInstance",
+            "Properties" : {
+                "Handle" : { "Ref" : "ApplicationsWaitHandle" },
+                "Timeout" : "7200"
+            }
+        },
+        "ApplicationsIPAssoc" : {
+             "Type" : "AWS::EC2::EIPAssociation",
+             "Properties" : {
+                 "EIP" : { "Ref" : "ApplicationsEIP" },
+                 "InstanceId" : { "Ref" : "ApplicationsInstance" }
+             }
+        }
+    },
+    "Outputs" : {
+        "CloudFoundryApiEndpoint" : {
+            "Value" : { "Fn::Join" : [ "", [ "https://api.", { "Ref" : "ApplicationsEIP" }, ".xip.io" ] ] }
+        },
+        "TrustedAnalyticsConsole" : {
+            "Value" : { "Fn::Join" : [ "", [ "https://console.", { "Ref" : "ApplicationsEIP" }, ".xip.io" ] ] }
+        },
+        "Username" : {
+            "Value" : "admin"
+        }
+    }
+}
